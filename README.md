@@ -1,2 +1,3 @@
-# reinforced_artificial_life
+# Reinforced Artificial Life
+
 Artificial life powered by reinforcement learning
