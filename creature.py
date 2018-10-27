@@ -29,15 +29,10 @@ class Creature:
         ddy = random.random() * 0.3 - 0.15
 
         # Bounce off walls:
-        size_radius = world.size - self.radius
-        if self.x < -size_radius:
-            ddx -= self.x - size_radius
-        elif self.x > size_radius:
-            ddx += size_radius - self.x
-        if self.y < -size_radius:
-            ddy -= self.y - size_radius
-        elif self.y > size_radius:
-            ddy += size_radius - self.y
+        dist = self.distance(0, 0)
+        if dist > world.size - self.radius:
+            ddx -= 0.05 * self.x / dist
+            ddy -= 0.05 * self.y / dist
 
         for other in overlapping:
             dist = self.distance(other.x, other.y)

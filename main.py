@@ -4,7 +4,7 @@ import pygame
 from display import Display
 from world import World
 
-START_NUM_CREATURES = 50
+START_NUM_CREATURES = 100
 FRAME_RATE = 30
 
 
