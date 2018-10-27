@@ -28,7 +28,6 @@ class Creature:
         ddx = random.random() * 0.3 - 0.15
         ddy = random.random() * 0.3 - 0.15
 
-        # Bounce off walls:
         dist = self.distance(0, 0)
         if dist > world.size - self.radius:
             ddx -= 0.05 * self.x / dist
