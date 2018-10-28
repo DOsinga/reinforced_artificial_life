@@ -20,9 +20,25 @@ class Display():
         self.screen.fill((0, 0, 0))
 
     def circle(self, color, x, y, radius):
+        x, y = self.to_display_coords(x, y)
+        pygame.draw.circle(self.screen, color, (x, y), int(radius * self.scale))
+
+    def to_display_coords(self, x, y):
         x = int(x * self.scale - self.offset_x + self.width / 2)
         y = int(y * self.scale - self.offset_y + self.height / 2)
-        pygame.draw.circle(self.screen, color, (x, y), int(radius * self.scale))
+        return x, y
+
+    def dot(self, color, x, y):
+        if self.scale < 0.5:
+            return
+        x, y = self.to_display_coords(x, y)
+        if self.scale > 2.0:
+            pygame.draw.circle(self.screen, color, (x, y), int(self.scale / 2))
+        else:
+            if self.scale < 1.0:
+                f = (self.scale - 0.5) / 0.5
+                color = tuple(map(lambda c: int(c * f), color))
+            self.screen.set_at((x, y), color)
 
     def flip(self):
         pygame.display.flip()

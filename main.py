@@ -4,18 +4,15 @@ import pygame
 from display import Display
 from world import World
 
-START_NUM_CREATURES = 100
-FRAME_RATE = 30
+FRAME_RATE = 60
+TITLE = 'Reinforced Artificial Life'
 
 
 def main():
-    world = World(2000)
+    world = World(500)
 
-    display = Display('Reinforced Artificial Life', 640, 480)
+    display = Display(TITLE, 640, 480)
     clock = pygame.time.Clock()
-
-    for _ in range(START_NUM_CREATURES):
-        world.add_creature(world.random_creature())
 
     while True:
         # --- Event Processing
@@ -44,6 +41,7 @@ def main():
         world.draw(display)
         clock.tick(FRAME_RATE)
         pygame.display.flip()
+        pygame.display.set_caption(TITLE + ' ' + world.get_info())
 
 
 if __name__ == '__main__':
