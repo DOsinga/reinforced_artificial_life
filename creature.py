@@ -16,7 +16,7 @@ class Creature:
         Creature.id_count += 1
 
     def step(self, world, nearby):
-        if self.energy > 50000:
+        if self.energy > 500:
             return None
         dx = 0
         dy = 0
