@@ -25,9 +25,9 @@ def main():
 
         keys_down = pygame.key.get_pressed()
         if keys_down[pygame.K_LEFT]:
-            display.offset_x -= 10
-        elif keys_down[pygame.K_RIGHT]:
             display.offset_x += 10
+        elif keys_down[pygame.K_RIGHT]:
+            display.offset_x -= 10
         elif keys_down[pygame.K_UP]:
             display.offset_y += 10
         elif keys_down[pygame.K_DOWN]:
@@ -40,7 +40,7 @@ def main():
             world.step()
         world.draw(display)
         clock.tick(FRAME_RATE)
-        pygame.display.flip()
+        display.flip()
         pygame.display.set_caption(TITLE + ' ' + world.get_info())
 
 

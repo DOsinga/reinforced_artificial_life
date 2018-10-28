@@ -2,6 +2,7 @@ import math
 import random
 
 MAX_SPEED = 7
+ε = .50 # Greedy factor
 
 class Creature:
     """Creature class representing one bouncing ball for now."""
@@ -26,6 +27,12 @@ class Creature:
             dx -= 0.05 * self.x / world.size
             dy -= 0.05 * self.y / world.size
 
+        if random.random() < ε:
+            # Explore
+            return random.uniform(-2, 2), random.uniform(-2, 2)
+
+
+        # Exploit
         for other in nearby:
             dist = self.distance(other.x, other.y)
             if dist == 0:

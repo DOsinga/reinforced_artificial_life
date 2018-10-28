@@ -6,7 +6,7 @@ from rtree import index
 from creature import Creature, MAX_SPEED
 from grass import Grass
 
-GRASS_COUNT = 1000
+GRASS_COUNT = 2000
 
 # Creatures with less energy than this die
 MIN_ENERGY = 100
@@ -44,6 +44,7 @@ class World:
         del self.creatures[creature.id]
 
     def step(self):
+        # Watching grass grow
         while len(self.grass) < GRASS_COUNT:
             grass = Grass(random.uniform(-1, 1) * self.size,
                           random.uniform(-1, 1) * self.size)
@@ -62,6 +63,7 @@ class World:
             to_keep = []
             for real_distance, candidate in nearby:
                 if real_distance < creature.radius() - candidate.radius():
+                    # Dinner time
                     if isinstance(candidate, Grass):
                         creature.energy += 5
                         del self.grass[candidate.id]
@@ -71,6 +73,9 @@ class World:
                         dead.add(candidate)
                         creature.energy += candidate.energy
                         continue
+                    else:
+                        # I would say code can never get here
+                        assert False, f"candidate.energy {candidate.energy} should not be larger than creature.energy {creature.energy}"
                 to_keep.append(candidate)
 
             decision = creature.step(self, to_keep)
@@ -86,7 +91,7 @@ class World:
                 dead.add(creature)
             self.index.add(creature.id, creature.box())
 
-        # Bring out your dead
+        # Bring out your dead - Grappig, ik wilde hetzelfde commentaar erbij zetten maar toen stond het er al :-)
         for creature in dead:
             del self.creatures[creature.id]
             self.index.delete(creature.id, creature.box())
