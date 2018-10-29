@@ -3,7 +3,7 @@ import colorsys
 
 from rtree import index
 
-from creature import Creature, MAX_SPEED
+from creature import Creature, MAX_EATABLE_SIZE
 from grass import Grass
 
 GRASS_COUNT = 2000
@@ -13,6 +13,10 @@ MIN_ENERGY = 100
 
 # Fraction of energy lost each turn
 ENERGY_LOSS = 0.001
+
+# Fraction of eaten creature that is available for the eater
+EAT_CREATURE_EFFICIENCY = .9
+
 
 # How far can creatures 'see'
 VISION_DISTANCE = 150
@@ -53,6 +57,7 @@ class World:
 
         dead = set()
         born = []
+        print(len( self.creatures ))
         for creature in self.creatures.values():
             if creature.id in dead:
                 continue
@@ -69,13 +74,10 @@ class World:
                         del self.grass[candidate.id]
                         self.index.delete(candidate.id, candidate.box())
                         continue
-                    elif candidate.energy < creature.energy:
+                    elif candidate.energy < creature.energy * MAX_EATABLE_SIZE:
                         dead.add(candidate)
-                        creature.energy += candidate.energy
+                        creature.energy += candidate.energy * EAT_CREATURE_EFFICIENCY
                         continue
-                    else:
-                        # I would say code can never get here
-                        assert False, f"candidate.energy {candidate.energy} should not be larger than creature.energy {creature.energy}"
                 to_keep.append(candidate)
 
             decision = creature.step(self, to_keep)

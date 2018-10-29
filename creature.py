@@ -2,7 +2,13 @@ import math
 import random
 
 MAX_SPEED = 7
-ε = .50 # Greedy factor
+
+# If total dx and dy is less than this amount, we deem the environment not interesting -> Go explore
+INTERESTING = 5
+
+# Not possible to eat creatures that are larger than this fraction of your own size
+MAX_EATABLE_SIZE = .9
+
 
 class Creature:
     """Creature class representing one bouncing ball for now."""
@@ -27,17 +33,10 @@ class Creature:
             dx -= 0.05 * self.x / world.size
             dy -= 0.05 * self.y / world.size
 
-        if random.random() < ε:
-            # Explore
-            return random.uniform(-2, 2), random.uniform(-2, 2)
-
-
         # Exploit
         for other in nearby:
             dist = self.distance(other.x, other.y)
-            if dist == 0:
-                print(dist)
-            if isinstance(other, Creature) and other.energy > self.energy:
+            if isinstance(other, Creature) and other.energy > self.energy * MAX_EATABLE_SIZE:
                 weight = -2
             else:
                 weight = 2.2
@@ -45,6 +44,10 @@ class Creature:
             other_dy = (other.y - self.y) / dist
             dx += other_dx * weight
             dy += other_dy * weight
+
+        if abs(dx) + abs(dy) < INTERESTING:
+            # Nothing to get worked up about, go wander...
+            return random.uniform(-3, 3), random.uniform(-3, 3)
 
         # Maximum speed:
         if abs(dx) > MAX_SPEED:
