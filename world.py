@@ -6,7 +6,7 @@ from rtree import index
 from creature import Creature, MAX_EATABLE_SIZE
 from grass import Grass
 
-GRASS_COUNT = 2000
+GRASS_COUNT = 1000
 
 # Creatures with less energy than this die
 MIN_ENERGY = 100
@@ -40,6 +40,8 @@ class World:
         for _ in range(START_NUM_CREATURES):
             self.add_creature(self.random_creature())
         self.grass = {}
+        while len(self.grass) < GRASS_COUNT:
+            self.add_grass()
 
     def add_creature(self, creature):
         self.creatures[creature.id] = creature
@@ -47,17 +49,19 @@ class World:
     def del_creature(self, creature):
         del self.creatures[creature.id]
 
+    def add_grass(self):
+        grass = Grass(random.uniform(-1, 1) * self.size,
+                      random.uniform(-1, 1) * self.size)
+        self.grass[grass.id] = grass
+        self.index.add(grass.id, grass.box())
+
     def step(self):
         # Watching grass grow
-        while len(self.grass) < GRASS_COUNT:
-            grass = Grass(random.uniform(-1, 1) * self.size,
-                          random.uniform(-1, 1) * self.size)
-            self.grass[grass.id] = grass
-            self.index.add(grass.id, grass.box())
+        for _ in range(5):
+            self.add_grass()
 
         dead = set()
         born = []
-        print(len( self.creatures ))
         for creature in self.creatures.values():
             if creature.id in dead:
                 continue

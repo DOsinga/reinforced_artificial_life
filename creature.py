@@ -13,6 +13,7 @@ BLACK = (0,0,0)
 RED = (255,0,0)
 GREEN = (0,255,0)
 BLUE = (0,0,255)
+YELLOW = (255,255,0)
 
 class Creature:
     """Creature class representing one bouncing ball for now."""
@@ -29,7 +30,7 @@ class Creature:
 
     def step(self, world, nearby):
         if self.energy > 500:
-            self.actioncolor = BLACK
+            self.actioncolor = YELLOW
             return None
         dx = 0
         dy = 0
@@ -64,7 +65,6 @@ class Creature:
         if abs(dy) > MAX_SPEED:
             dy *= MAX_SPEED / abs(dy)
 
-        print( flee, eat )
         self.actioncolor = flee>eat and RED or GREEN
 
         return dx, dy
