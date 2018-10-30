@@ -3,7 +3,7 @@ import colorsys
 
 from rtree import index
 
-from creature import Creature, MAX_SPEED
+from creature import Creature, MAX_EATABLE_SIZE
 from grass import Grass
 
 GRASS_COUNT = 1000
@@ -13,6 +13,10 @@ MIN_ENERGY = 100
 
 # Fraction of energy lost each turn
 ENERGY_LOSS = 0.001
+
+# Fraction of eaten creature that is available for the eater
+EAT_CREATURE_EFFICIENCY = .9
+
 
 # How far can creatures 'see'
 VISION_DISTANCE = 150
@@ -36,6 +40,8 @@ class World:
         for _ in range(START_NUM_CREATURES):
             self.add_creature(self.random_creature())
         self.grass = {}
+        while len(self.grass) < GRASS_COUNT:
+            self.add_grass()
 
     def add_creature(self, creature):
         self.creatures[creature.id] = creature
@@ -43,12 +49,16 @@ class World:
     def del_creature(self, creature):
         del self.creatures[creature.id]
 
+    def add_grass(self):
+        grass = Grass(random.uniform(-1, 1) * self.size,
+                      random.uniform(-1, 1) * self.size)
+        self.grass[grass.id] = grass
+        self.index.add(grass.id, grass.box())
+
     def step(self):
-        while len(self.grass) < GRASS_COUNT:
-            grass = Grass(random.uniform(-1, 1) * self.size,
-                          random.uniform(-1, 1) * self.size)
-            self.grass[grass.id] = grass
-            self.index.add(grass.id, grass.box())
+        # Watching grass grow
+        for _ in range(5):
+            self.add_grass()
 
         dead = set()
         born = []
@@ -62,14 +72,15 @@ class World:
             to_keep = []
             for real_distance, candidate in nearby:
                 if real_distance < creature.radius() - candidate.radius():
+                    # Dinner time
                     if isinstance(candidate, Grass):
                         creature.energy += 5
                         del self.grass[candidate.id]
                         self.index.delete(candidate.id, candidate.box())
                         continue
-                    elif candidate.energy < creature.energy:
+                    elif candidate.energy < creature.energy * MAX_EATABLE_SIZE:
                         dead.add(candidate)
-                        creature.energy += candidate.energy
+                        creature.energy += candidate.energy * EAT_CREATURE_EFFICIENCY
                         continue
                 to_keep.append(candidate)
 
@@ -86,7 +97,7 @@ class World:
                 dead.add(creature)
             self.index.add(creature.id, creature.box())
 
-        # Bring out your dead
+        # Bring out your dead - Grappig, ik wilde hetzelfde commentaar erbij zetten maar toen stond het er al :-)
         for creature in dead:
             del self.creatures[creature.id]
             self.index.delete(creature.id, creature.box())
