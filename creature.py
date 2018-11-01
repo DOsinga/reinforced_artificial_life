@@ -1,7 +1,11 @@
 import math
 import random
+import numpy as np
+
+from model import SLICES
 
 MAX_SPEED = 7
+WANDER_SPEED = 3
 
 # If total dx and dy is less than this amount, we deem the environment not interesting -> Go explore
 INTERESTING = 5
@@ -28,46 +32,49 @@ class Creature:
         self.id = Creature.id_count
         Creature.id_count += 1
 
-    def step(self, world, nearby):
+
+    def step(self, nearby):
         if self.energy > 500:
             self.actioncolor = YELLOW
             return None
-        dx = 0
-        dy = 0
-
-        dist = self.distance(0, 0)
-        if dist > world.size - self.radius():
-            dx -= 0.05 * self.x / world.size
-            dy -= 0.05 * self.y / world.size
 
         flee = eat = 0
-        for other in nearby:
-            dist = self.distance(other.x, other.y)
+        slice_preference = np.zeros(SLICES)
+        for other, slice, distance in nearby:
+            assert type(slice) == type(1), "wrong type " + str(type(slice))
+            assert slice>=0, "slice = "+ str(slice)
+            assert slice < SLICES, "slice = "+ str(slice)
+            distance_factor = 1/(distance+1)
             if isinstance(other, Creature) and other.energy > self.energy * MAX_EATABLE_SIZE:
-                weight = -2
+                weight = 4*distance_factor
                 flee += weight
+                # Flee: update the slice at the other side
+                slice = (slice + SLICES // 2) % SLICES
+                assert type(slice) == type(1), "2wrong type " + str(type(slice))
+                assert slice >= 0, "2slice = " + str(slice)
+                assert slice < SLICES, "2slice = " + str(slice)
             else:
-                weight = 2.2
+                weight = 2.2*distance_factor
                 eat += weight
-            other_dx = (other.x - self.x) / dist
-            other_dy = (other.y - self.y) / dist
-            dx += other_dx * weight
-            dy += other_dy * weight
+            slice_preference[slice] += weight
+            # And the two slices next to that one
+            slice_preference[(slice+1) % SLICES] += weight/2
+            slice_preference[(slice-1) % SLICES] += weight/2
 
-        if abs(dx) + abs(dy) < INTERESTING:
+        chosen_slice = np.argmax(slice_preference)
+        slice_weight = slice_preference[chosen_slice]
+
+        if slice_weight < .4:
             # Nothing to get worked up about, go wander...
             self.actioncolor = BLUE
-            return random.uniform(-3, 3), random.uniform(-3, 3)
+            chosen_slice = np.random.randint(SLICES)
+            speed = WANDER_SPEED
 
-        # Maximum speed:
-        if abs(dx) > MAX_SPEED:
-            dx *= MAX_SPEED / abs(dx)
-        if abs(dy) > MAX_SPEED:
-            dy *= MAX_SPEED / abs(dy)
+        else:
+            self.actioncolor = flee>eat and RED or GREEN
+            speed = min(slice_weight*4, MAX_SPEED)
 
-        self.actioncolor = flee>eat and RED or GREEN
-
-        return dx, dy
+        return chosen_slice, speed
 
     def draw(self, display):
         display.circle(self.color, self.x, self.y, int(self.radius()))

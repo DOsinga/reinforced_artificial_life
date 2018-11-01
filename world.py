@@ -5,6 +5,7 @@ from rtree import index
 
 from creature import Creature, MAX_EATABLE_SIZE
 from grass import Grass
+from model import cart2pol, pol2cart, cart2slice, slice2pol, slice2cart, SLICES
 
 GRASS_COUNT = 1000
 
@@ -70,7 +71,8 @@ class World:
             self.index.delete(creature.id, creature.box())
             nearby = self.nearby(creature)
             to_keep = []
-            for real_distance, candidate in nearby:
+            #for real_distance, candidate in nearby:
+            for candidate, slice, real_distance in nearby:
                 if real_distance < creature.radius() - candidate.radius():
                     # Dinner time
                     if isinstance(candidate, Grass):
@@ -84,11 +86,21 @@ class World:
                         continue
                 to_keep.append(candidate)
 
-            decision = creature.step(self, to_keep)
+            decision = creature.step(nearby)
+            # Nog wel iets doen met randen van de wereld
             if decision is None:
                 born.append(creature.split())
             else:
-                dx, dy = decision
+                #dx, dy = decision
+                slice, speed = decision
+                dx, dy = slice2cart( slice, SLICES, speed )
+
+                # Adjust for the edge of the world
+                dist = creature.distance(0, 0)
+                if dist > self.size - creature.radius():
+                    dx -= 0.05 * creature.x / self.size
+                    dy -= 0.05 * creature.y / self.size
+
                 creature.x += dx
                 creature.y += dy
 
@@ -129,9 +141,11 @@ class World:
                 candidate = self.grass[candidate_id]
             else:
                 candidate = self.creatures[candidate_id]
+
+            slice = cart2slice(candidate.x-creature.x, candidate.y-creature.y, SLICES)
             real_distance = creature.distance(candidate.x, candidate.y)
             if real_distance < VISION_DISTANCE:
-                res.append((real_distance, candidate))
+                res.append((candidate, slice, real_distance ))
 
         return res
 
