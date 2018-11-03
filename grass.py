@@ -1,5 +1,6 @@
 GRASS_COLOR = (50, 200, 50)
 
+
 class Grass:
     count = -1
 
