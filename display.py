@@ -1,7 +1,7 @@
 import pygame
 
 
-class Display():
+class Display:
     def __init__(self, title, width, height, delay=30):
         self.width = width
         self.height = height

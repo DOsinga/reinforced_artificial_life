@@ -1,11 +1,11 @@
-import random
 import colorsys
+import random
 
 from rtree import index
 
 from creature import Creature, MAX_EATABLE_SIZE
 from grass import Grass
-from model import cart2pol, pol2cart, cart2slice, slice2pol, slice2cart, SLICES
+from util import cart2slice, slice2cart, SLICES
 
 GRASS_COUNT = 1000
 
@@ -16,16 +16,16 @@ MIN_ENERGY = 100
 ENERGY_LOSS = 0.001
 
 # Fraction of eaten creature that is available for the eater
-EAT_CREATURE_EFFICIENCY = .9
-
+EAT_CREATURE_EFFICIENCY = 0.9
 
 # How far can creatures 'see'
 VISION_DISTANCE = 150
 
 START_NUM_CREATURES = 4
 
+
 def random_color():
-    hue = random.uniform(0.5, 1.1) # random.uniform(0.0, 0.75)
+    hue = random.uniform(0.5, 1.1)
     lightness = random.uniform(0.5, 0.8)
     saturation = random.uniform(0.7, 0.9)
     return tuple(map(lambda f: int(f * 255), colorsys.hls_to_rgb(hue, lightness, saturation)))
@@ -33,6 +33,7 @@ def random_color():
 
 class World:
     """The world and the creatures in it. Also has an r-tree for collision detection."""
+
     def __init__(self, size):
         """Create a world with a size of size from the origin."""
         self.index = index.Index()
@@ -51,8 +52,7 @@ class World:
         del self.creatures[creature.id]
 
     def add_grass(self):
-        grass = Grass(random.uniform(-1, 1) * self.size,
-                      random.uniform(-1, 1) * self.size)
+        grass = Grass(random.uniform(-1, 1) * self.size, random.uniform(-1, 1) * self.size)
         self.grass[grass.id] = grass
         self.index.add(grass.id, grass.box())
 
@@ -71,7 +71,7 @@ class World:
             self.index.delete(creature.id, creature.box())
             nearby = self.nearby(creature)
             to_keep = []
-            #for real_distance, candidate in nearby:
+            # for real_distance, candidate in nearby:
             for candidate, slice, real_distance in nearby:
                 if real_distance < creature.radius() - candidate.radius():
                     # Dinner time
@@ -91,9 +91,9 @@ class World:
             if decision is None:
                 born.append(creature.split())
             else:
-                #dx, dy = decision
+                # dx, dy = decision
                 slice, speed = decision
-                dx, dy = slice2cart( slice, SLICES, speed )
+                dx, dy = slice2cart(slice, SLICES, speed)
 
                 # Adjust for the edge of the world
                 dist = creature.distance(0, 0)
@@ -104,7 +104,7 @@ class World:
                 creature.x += dx
                 creature.y += dy
 
-            creature.energy *= (1 - ENERGY_LOSS)
+            creature.energy *= 1 - ENERGY_LOSS
             if creature.energy < MIN_ENERGY:
                 dead.add(creature)
             self.index.add(creature.id, creature.box())
@@ -126,12 +126,18 @@ class World:
             creature.draw(display)
 
     def random_creature(self):
-        creature = Creature(random.uniform(-1, 1) * self.size, random.uniform(-1, 1) * self.size, color=random_color(),
-                            energy=random.uniform(200, 600))
+        creature = Creature(
+            random.uniform(-1, 1) * self.size,
+            random.uniform(-1, 1) * self.size,
+            color=random_color(),
+            energy=random.uniform(200, 600),
+        )
         return creature
 
     def indexed(self):
-        return ' '.join(str(self.creatures[ci]) for ci in  self.index.intersection([-1000, -1000, 1000, 1000]))
+        return ' '.join(
+            str(self.creatures[ci]) for ci in self.index.intersection([-1000, -1000, 1000, 1000])
+        )
 
     def nearby(self, creature):
         """Return any creature inside the circle (x,y) with the given radius."""
@@ -142,10 +148,10 @@ class World:
             else:
                 candidate = self.creatures[candidate_id]
 
-            slice = cart2slice(candidate.x-creature.x, candidate.y-creature.y, SLICES)
+            slice = cart2slice(candidate.x - creature.x, candidate.y - creature.y, SLICES)
             real_distance = creature.distance(candidate.x, candidate.y)
             if real_distance < VISION_DISTANCE:
-                res.append((candidate, slice, real_distance ))
+                res.append((candidate, slice, real_distance))
 
         return res
 
