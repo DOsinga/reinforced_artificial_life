@@ -1,7 +1,23 @@
 import math
 import random
+import numpy as np
+
+from model import SLICES
 
 MAX_SPEED = 7
+WANDER_SPEED = 3
+
+# If total dx and dy is less than this amount, we deem the environment not interesting -> Go explore
+INTERESTING = 5
+
+# Not possible to eat creatures that are larger than this fraction of your own size
+MAX_EATABLE_SIZE = .9
+
+BLACK = (0,0,0)
+RED = (255,0,0)
+GREEN = (0,255,0)
+BLUE = (0,0,255)
+YELLOW = (255,255,0)
 
 class Creature:
     """Creature class representing one bouncing ball for now."""
@@ -11,44 +27,58 @@ class Creature:
         self.x = x
         self.y = y
         self.color = color
+        self.actioncolor = BLACK
         self.energy = energy
         self.id = Creature.id_count
         Creature.id_count += 1
 
-    def step(self, world, nearby):
+
+    def step(self, nearby):
         if self.energy > 500:
+            self.actioncolor = YELLOW
             return None
-        dx = 0
-        dy = 0
 
-        dist = self.distance(0, 0)
-        if dist > world.size - self.radius():
-            dx -= 0.05 * self.x / world.size
-            dy -= 0.05 * self.y / world.size
-
-        for other in nearby:
-            dist = self.distance(other.x, other.y)
-            if dist == 0:
-                print(dist)
-            if isinstance(other, Creature) and other.energy > self.energy:
-                weight = -2
+        flee = eat = 0
+        slice_preference = np.zeros(SLICES)
+        for other, slice, distance in nearby:
+            assert type(slice) == type(1), "wrong type " + str(type(slice))
+            assert slice>=0, "slice = "+ str(slice)
+            assert slice < SLICES, "slice = "+ str(slice)
+            distance_factor = 1/(distance+1)
+            if isinstance(other, Creature) and other.energy > self.energy * MAX_EATABLE_SIZE:
+                weight = 4*distance_factor
+                flee += weight
+                # Flee: update the slice at the other side
+                slice = (slice + SLICES // 2) % SLICES
+                assert type(slice) == type(1), "2wrong type " + str(type(slice))
+                assert slice >= 0, "2slice = " + str(slice)
+                assert slice < SLICES, "2slice = " + str(slice)
             else:
-                weight = 2.2
-            other_dx = (other.x - self.x) / dist
-            other_dy = (other.y - self.y) / dist
-            dx += other_dx * weight
-            dy += other_dy * weight
+                weight = 2.2*distance_factor
+                eat += weight
+            slice_preference[slice] += weight
+            # And the two slices next to that one
+            slice_preference[(slice+1) % SLICES] += weight/2
+            slice_preference[(slice-1) % SLICES] += weight/2
 
-        # Maximum speed:
-        if abs(dx) > MAX_SPEED:
-            dx *= MAX_SPEED / abs(dx)
-        if abs(dy) > MAX_SPEED:
-            dy *= MAX_SPEED / abs(dy)
+        chosen_slice = np.argmax(slice_preference)
+        slice_weight = slice_preference[chosen_slice]
 
-        return dx, dy
+        if slice_weight < .4:
+            # Nothing to get worked up about, go wander...
+            self.actioncolor = BLUE
+            chosen_slice = np.random.randint(SLICES)
+            speed = WANDER_SPEED
+
+        else:
+            self.actioncolor = flee>eat and RED or GREEN
+            speed = min(slice_weight*4, MAX_SPEED)
+
+        return chosen_slice, speed
 
     def draw(self, display):
         display.circle(self.color, self.x, self.y, int(self.radius()))
+        display.circle(self.actioncolor, self.x, self.y, 3)
 
     def box(self, box_size=None):
         """Return the bounding box for this creature"""
