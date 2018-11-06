@@ -53,12 +53,12 @@ class QCow(Cow):
             dy = y - self.y
             try:
                 stateindex = statecells.index((dx, dy))
-                state[stateindex] = int(cell.celltype)
             except ValueError:
                 # Index raises an error if needle is not found
-                # which is just fine here. No action to be taken
-                # in the except clauase
-                pass
+                # which just means this cell is not within the close
+                # neighbours of this creature and thus is not needed
+                continue
+            state[stateindex] = int(cell.celltype)
         return tuple(state)
 
     def reward(self, reward):
