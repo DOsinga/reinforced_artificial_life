@@ -54,7 +54,10 @@ class QCow(Cow):
             try:
                 stateindex = statecells.index((dx, dy))
                 state[stateindex] = int(cell.celltype)
-            except:
+            except ValueError:
+                # Index raises an error if needle is not found
+                # which is just fine here. No action to be taken
+                # in the except clauase
                 pass
         return tuple(state)
 
