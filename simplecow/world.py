@@ -57,6 +57,7 @@ class Cell:
 
 class World:
     """The world and the creatures in it. Also has an r-tree for collision detection."""
+
     wins = []
     steps = 0
 
@@ -125,7 +126,7 @@ class World:
         self.grid[x][y].set(CellType.GRASS, grass)
 
     def step(self):
-        World.steps +=1
+        World.steps += 1
         dead = set()
         born = []
         for creature in self.creatures.values():

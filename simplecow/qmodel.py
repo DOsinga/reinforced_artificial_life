@@ -58,12 +58,10 @@ class QModel:
         )
 
     def save(self):
-        with open( 'q_table.txt', 'w') as f:
+        with open('q_table.txt', 'w') as f:
             for key, entry in self.Q_table.items():
                 state, action = key
-                f.write( f'{state},{int(action)}:{entry.count},{entry.value}\n' )
-
-
+                f.write(f'{state},{int(action)}:{entry.count},{entry.value}\n')
 
     def load(self):
         pass
