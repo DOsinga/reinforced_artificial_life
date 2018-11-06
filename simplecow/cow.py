@@ -12,12 +12,17 @@ YELLOW = (255, 255, 0)
 MIN_ENERGY = 5
 MAX_ENERGY = 50
 
+# How far can creatures 'see'
+VISION_DISTANCE = 2
+
+
 class Action(Enum):
-    UP = 0
-    RIGHT = 1
-    DOWN = 2
-    LEFT = 3
-    SPLIT = 4
+    NONE = 0
+    UP = 1
+    RIGHT = 2
+    DOWN = 3
+    LEFT = 4
+    SPLIT = 5
 
     def __repr__(self):
         return self.name
@@ -26,7 +31,7 @@ class Action(Enum):
 class Cow(object):
     id_count = 0
 
-    def __init__(self, x, y, color, energy):
+    def __init__(self, x, y, color, energy, lineage=0):
         self.x = x
         self.y = y
         self.color = color
@@ -43,37 +48,49 @@ class Cow(object):
             self.actioncolor = YELLOW
             return Action.SPLIT
 
-        return self.action( nearby )
+        return self.action(nearby)
 
     def action(self, nearby):
-        return random.choice(list(Action)[:4])
+        return random.choice(list(Action)[1:-1])
 
     def draw(self, display):
-        display.circle(self.color, self.x, self.y, 1 * min(1,math.sqrt(2*self.energy/MAX_ENERGY)))
-        display.circle(self.actioncolor, self.x, self.y, .3 * min(1,math.sqrt(2*self.energy/MAX_ENERGY)))
+        display.circle(
+            self.color, self.x, self.y, 1 * min(1, math.sqrt(2 * self.energy / MAX_ENERGY))
+        )
+        display.circle(
+            self.actioncolor, self.x, self.y, 0.3 * min(1, math.sqrt(2 * self.energy / MAX_ENERGY))
+        )
 
     def radius(self):
         return math.sqrt(self.energy)
 
     def split(self):
-        new_creature = Cow(self.x, self.y, self.color, self.energy / 2)
+        lineage = hasattr(self, 'lineage') and self.lineage or 0
+        new_creature = Cow(self.x, self.y, self.color, self.energy / 2, lineage)
         self.energy /= 2
         return new_creature
+
+    def reward(self, reward):
+        # Place holder for more intelligent cows
+        pass
 
     def __repr__(self):
         return '\%02d/' % self.id
 
 
-class GreedyCow( Cow ):
-
+class GreedyCow(Cow):
     def action(self, nearby):
-        neighbours = {(self.x-1, self.y): Action.LEFT,
-                      (self.x+1, self.y): Action.RIGHT,
-                      (self.x, self.y-1): Action.UP,
-                      (self.x, self.y+1): Action.DOWN}
+        neighbours = {
+            (self.x - 1, self.y): Action.LEFT,
+            (self.x + 1, self.y): Action.RIGHT,
+            (self.x, self.y - 1): Action.UP,
+            (self.x, self.y + 1): Action.DOWN,
+        }
 
-        possible_actions = [neighbours[(x,y)] for cell, x, y in nearby if (x,y) in neighbours.keys()]
+        possible_actions = [
+            neighbours[(x, y)] for cell, x, y in nearby if (x, y) in neighbours.keys()
+        ]
         if possible_actions:
             return random.choice(possible_actions)
         else:
-            return random.choice(list(Action)[:4])
+            return super().action(nearby)

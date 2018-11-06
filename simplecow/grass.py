@@ -11,8 +11,8 @@ class Grass:
         self.y = y
 
     def draw(self, display):
-        display.rect( GRASS_COLOR, self.x, self.y )
-        #display.dot(GRASS_COLOR, self.x, self.y)
+        display.rect(GRASS_COLOR, self.x, self.y)
+        # display.dot(GRASS_COLOR, self.x, self.y)
 
     def box(self):
         return self.x, self.y, self.x, self.y

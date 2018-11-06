@@ -1,9 +1,10 @@
 from simplecow.cow import Action
 from dataclasses import dataclass
 
-models = {} # Dict of key:QModel to keep track of the various incarnations of the model
+models = {}  # Dict of key:QModel to keep track of the various incarnations of the model
 
-def get_model( lineage ):
+
+def get_model(lineage):
     ''' Returs the model for the given lineage. If it does not exist yet, create it '''
     model = models.get(lineage)
     if not model:
@@ -11,15 +12,15 @@ def get_model( lineage ):
         models[lineage] = model
     return model
 
+
 # QEntries are the values in the Q-table
 @dataclass()
-class QEntry():
+class QEntry:
     count: int = 0
     value: float = 0.0
 
 
-class QModel():
-
+class QModel:
     def __init__(self):
         # Q_table is a dict of all known state+action -> value cominations.
         # dict keys: (state, action) tuples
@@ -51,4 +52,6 @@ class QModel():
         return res
 
     def __str__(self):
-        return "\n".join([str(key) + ' : ' + str(self.Q_table[key]) for key in self.Q_table.keys()])
+        return "\n".join(
+            [str(key) + ' : ' + str(self.Q_table[key]) for key in self.Q_table.keys()]
+        )

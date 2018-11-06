@@ -9,6 +9,7 @@ TITLE = 'Reinforced Artificial Life'
 WORLDSIZE = 31
 ZOOM = 18
 
+
 def main():
     world = World(WORLDSIZE)
 
