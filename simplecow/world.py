@@ -57,6 +57,8 @@ class Cell:
 
 class World:
     """The world and the creatures in it. Also has an r-tree for collision detection."""
+    wins = []
+    steps = 0
 
     def __init__(self, size):
         """Create a world with a size of size """
@@ -123,6 +125,7 @@ class World:
         self.grid[x][y].set(CellType.GRASS, grass)
 
     def step(self):
+        World.steps +=1
         dead = set()
         born = []
         for creature in self.creatures.values():
@@ -185,20 +188,25 @@ class World:
         qcows = [k for k, c in self.creatures.items() if type(c) is QCow]
         greedycows = [k for k, c in self.creatures.items() if type(c) is GreedyCow]
         if not qcows and not greedycows:
-            print('It was a draw')
+            winner = 'No one'
         elif not qcows:
-            print('Greedy cows won')
+            World.wins += [0]
+            winner = 'Greedy cow'
         elif not greedycows:
-            print('Q cows won')
-        print()
+            World.wins += [1]
+            winner = 'Q cow'
 
         if not qcows or not greedycows:
+
+            winperc = sum(World.wins[-100:])
+            print(f'{len(World.wins)}. {winner} won {winperc}%, {World.steps} steps')
             # Delete all remaining creatures
             for creature in self.creatures.values():
                 self.grid[creature.x][creature.y].set(CellType.EMPTY)
             self.creatures = {}
             # And re-add the starting amounts
             self.add_creatures()
+            World.steps = 0
 
     def draw(self, display):
         display.clear()

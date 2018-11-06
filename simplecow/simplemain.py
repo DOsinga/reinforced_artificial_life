@@ -4,7 +4,7 @@ import pygame
 from display import Display
 from world import World
 
-FRAME_RATE = 30
+FRAME_RATE = 60
 TITLE = 'Reinforced Artificial Life'
 WORLDSIZE = 31
 ZOOM = 18

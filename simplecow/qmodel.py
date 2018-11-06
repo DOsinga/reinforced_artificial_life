@@ -39,6 +39,7 @@ class QModel:
         curvalue = self.Q_table[state_action].value
         increment = (reward - curvalue) / newcount
         self.Q_table[state_action].value += increment
+        self.save()
 
     # Returns Q-value/avg rewards for each action given a state
     def Q_values(self, state):
@@ -55,3 +56,14 @@ class QModel:
         return "\n".join(
             [str(key) + ' : ' + str(self.Q_table[key]) for key in self.Q_table.keys()]
         )
+
+    def save(self):
+        with open( 'q_table.txt', 'w') as f:
+            for key, entry in self.Q_table.items():
+                state, action = key
+                f.write( f'{state},{int(action)}:{entry.count},{entry.value}\n' )
+
+
+
+    def load(self):
+        pass

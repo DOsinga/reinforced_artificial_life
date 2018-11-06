@@ -1,6 +1,6 @@
 import math
 import random
-from enum import Enum
+from enum import IntEnum
 
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -16,7 +16,7 @@ MAX_ENERGY = 50
 VISION_DISTANCE = 2
 
 
-class Action(Enum):
+class Action(IntEnum):
     NONE = 0
     UP = 1
     RIGHT = 2
