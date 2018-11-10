@@ -10,6 +10,7 @@ MIN_ENERGY = 5
 
 
 class World:
+    ZOOM = 4
     def __init__(self, size, grass_fraction=0.1):
         self.creatures = {}
         self.size = size
@@ -18,7 +19,7 @@ class World:
         for i in np.random.choice(c, int(grass_fraction * c)):
             self.cells[i // size, i % size] = -1
 
-        for _ in range(20):
+        for _ in range(1):
             x, y = self.free_spot()
             creature = SimpleCow(x, y, 50)
             self.creatures[creature.id] = creature
@@ -105,7 +106,7 @@ class World:
                 creature.x = x
                 creature.y = y
             self.cells[creature.x, creature.y] = creature.id
-            creature.energy -= 2
+            #creature.energy -= 2
 
         done = creature.energy < MIN_ENERGY
 
