@@ -4,7 +4,7 @@ from collections import Counter
 import numpy as np
 import random
 
-from simplegrid.cow import SimpleCow, Action
+from simplegrid.cow import SimpleCow, GreedyCow, Action
 from simplegrid.deep_cow import DeepCow
 
 MIN_ENERGY = 5
@@ -12,9 +12,10 @@ INIT_ENERGY = 500
 GRASS_ENERGY = 25
 IDLE_COST = 1
 MOVE_COST = 2
+START_NUM_CREATURES=1
 
 class World:
-    def __init__(self, size, display, grass_fraction=0.1):
+    def __init__(self, size, display, grass_fraction=0.2):
         self.counts = {}
         display.scale = 4
         display.offset_x = display.scale * size / 2
@@ -26,7 +27,7 @@ class World:
         for i in np.random.choice(c, int(grass_fraction * c)):
             self.cells[i // size, i % size] = -1
 
-        for _ in range(10):
+        for _ in range(START_NUM_CREATURES+1):
             x, y = self.free_spot()
             self.add_new_creature(SimpleCow(x, y, INIT_ENERGY))
             x, y = self.free_spot()
