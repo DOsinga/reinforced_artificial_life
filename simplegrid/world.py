@@ -1,8 +1,11 @@
 #!/usr/bin/env python
+from collections import Counter
+
 import numpy as np
 import random
 
 from simplegrid.cow import SimpleCow, Action
+from simplegrid.deep_cow import DeepCow
 
 MIN_ENERGY = 5
 INIT_ENERGY = 500
@@ -12,6 +15,7 @@ MOVE_COST = 2
 
 class World:
     def __init__(self, size, display, grass_fraction=0.1):
+        self.counts = {}
         display.scale = 4
         display.offset_x = display.scale * size / 2
         display.offset_y = display.scale * size / 2
@@ -25,6 +29,8 @@ class World:
         for _ in range(10):
             x, y = self.free_spot()
             self.add_new_creature(SimpleCow(x, y, INIT_ENERGY))
+            x, y = self.free_spot()
+            self.add_new_creature(DeepCow(x, y, INIT_ENERGY))
 
     def free_spot(self):
         while True:
@@ -60,8 +66,7 @@ class World:
             del self.creatures[creature.id]
 
         for creature in born:
-            self.creatures[creature.id] = creature
-            self.cells[creature.x, creature.y] = creature.id
+            self.add_new_creature(creature)
 
         # Watching grass grow
         for _ in range(3):
@@ -69,6 +74,9 @@ class World:
             y = random.randrange(self.size)
             if self.cells[x, y] == 0:
                 self.cells[x, y] = -1
+
+        self.counts = Counter(creature.__class__.__name__ for creature in self.creatures.values())
+        return len(self.counts) == 2
 
     def draw(self, display):
         for x in range(self.size):
@@ -81,7 +89,7 @@ class World:
                     self.creatures[idx].draw(display)
 
     def get_info(self):
-        return str(len(self.creatures))
+        return ' '.join(k + ': ' + str(v) for k, v in self.counts.items())
 
     def apply_direction(self, option, x, y):
         dx, dy = option.direction()
@@ -101,7 +109,6 @@ class World:
                 x, y = self.apply_direction(option, creature.x, creature.y)
                 if self.cells[x, y] == 0:
                     new_creature = creature.split()
-                    self.add_new_creature(new_creature)
                     reward = 10
                     break
         else:
