@@ -3,9 +3,9 @@ import random
 
 from rtree import index
 
-from creature import Creature, MAX_EATABLE_SIZE
-from grass import Grass
-from util import cart2slice, slice2cart, SLICES
+from ballworld.creature import Creature, MAX_EATABLE_SIZE
+from ballworld.grass import Grass
+from ballworld.util import cart2slice, slice2cart, SLICES
 
 GRASS_COUNT = 1000
 
@@ -119,7 +119,6 @@ class World:
             self.index.add(creature.id, creature.box())
 
     def draw(self, display):
-        display.clear()
         for grass in self.grass.values():
             grass.draw(display)
         for creature in self.creatures.values():

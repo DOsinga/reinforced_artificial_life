@@ -2,7 +2,7 @@ import math
 import random
 import numpy as np
 
-from util import SLICES
+from ballworld.util import SLICES
 
 MAX_SPEED = 7
 WANDER_SPEED = 3

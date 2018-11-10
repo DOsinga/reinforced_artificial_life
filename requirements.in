@@ -1,6 +1,9 @@
 Rtree
 black
+gym
+keras
 numpy
 pip-tools
 pygame
+tensorflow
 venvdotapp

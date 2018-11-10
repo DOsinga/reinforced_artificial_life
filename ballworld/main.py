@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import pygame
 
-from display import Display
-from world import World
+from shared.display import Display
+from ballworld.world import World
 
 FRAME_RATE = 60
 TITLE = 'Reinforced Artificial Life'
@@ -40,6 +40,7 @@ def main():
             world.step()
         world.draw(display)
         clock.tick(FRAME_RATE)
+        display.clear()
         display.flip()
         pygame.display.set_caption(TITLE + ' ' + world.get_info())
 
