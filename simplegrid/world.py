@@ -24,9 +24,7 @@ class World:
 
         for _ in range(10):
             x, y = self.free_spot()
-            creature = SimpleCow(x, y, INIT_ENERGY)
-            self.creatures[creature.id] = creature
-            self.cells[x, y] = creature.id
+            self.add_new_creature(SimpleCow(x, y, INIT_ENERGY))
 
     def free_spot(self):
         while True:
@@ -34,6 +32,12 @@ class World:
             y = random.randrange(self.size)
             if self.cells[x, y] == 0:
                 return x, y
+
+    def add_new_creature(self, creature):
+        self.creatures[creature.id] = creature
+        self.cells[creature.x, creature.y] = creature.id
+        _, state, reward, done, _ = self.process_action(creature, Action.NONE)
+        creature.learn(state, reward, done)
 
     def step(self):
         dead = set()
@@ -97,6 +101,7 @@ class World:
                 x, y = self.apply_direction(option, creature.x, creature.y)
                 if self.cells[x, y] == 0:
                     new_creature = creature.split()
+                    self.add_new_creature(new_creature)
                     reward = 10
                     break
         else:
