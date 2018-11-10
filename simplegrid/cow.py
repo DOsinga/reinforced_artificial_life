@@ -46,7 +46,7 @@ def random_color():
 
 
 class SimpleCow(object):
-    id_count = 0
+    id_count = 1
 
     def __init__(self, x, y, energy, color=None):
         self.x = x
@@ -69,10 +69,13 @@ class SimpleCow(object):
 
     def draw(self, display):
         display.circle(
-            self.color, self.x, self.y, 3 * min(1, math.sqrt(2 * self.energy / MAX_ENERGY))
+            self.x, self.y, min(0.8, math.sqrt(2 * self.energy / MAX_ENERGY)), self.color
         )
         display.circle(
-            self.actioncolor, self.x, self.y, 1 * min(1, math.sqrt(2 * self.energy / MAX_ENERGY))
+            self.x,
+            self.y,
+            0.3 * min(0.8, math.sqrt(2 * self.energy / MAX_ENERGY)),
+            self.actioncolor,
         )
 
     def split(self):
@@ -85,7 +88,6 @@ class SimpleCow(object):
 
 
 class GreedyCow(SimpleCow):
-
     def learn(self, state, reward, done):
         self.state = state
 
@@ -96,15 +98,15 @@ class GreedyCow(SimpleCow):
             return Action.SPLIT
 
         neighbours = {
-            (-1, 0): Action.UP,
-            ( 1, 0): Action.DOWN,
-            ( 0, 1): Action.RIGHT,
-            ( 0,-1): Action.LEFT,
+            (0, 1): Action.UP,
+            (2, 1): Action.DOWN,
+            (1, 2): Action.RIGHT,
+            (1, 0): Action.LEFT,
         }
 
         possible_actions = []
-        for dir,action in neighbours.items():
-            if self.state[dir[0]+1, dir[1]+1] == -1:
+        for dir, action in neighbours.items():
+            if self.state[dir] == -1:
                 possible_actions += [action]
 
         if possible_actions:

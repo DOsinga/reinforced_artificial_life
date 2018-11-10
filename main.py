@@ -7,20 +7,20 @@ from shared.display import Display
 from ballworld.world import World as BallWorld
 from simplegrid.world import World as GridWorld
 
-WORLDS = {'ball': BallWorld,
-          'grid': GridWorld}
+WORLDS = {'ball': BallWorld, 'grid': GridWorld}
 
 FRAME_RATE = 60
 TITLE = 'Reinforced Artificial Life'
+WORLD_SIZE = 80
+SCALE = 8
 
 
 def main(WorldClass):
-    display = Display(TITLE, 640, 480)
+    display = Display(TITLE, WORLD_SIZE, SCALE)
     clock = pygame.time.Clock()
 
-
     while True:
-        world = WorldClass(100, display)
+        world = WorldClass(WORLD_SIZE, display)
 
         while True:
             # --- Event Processing

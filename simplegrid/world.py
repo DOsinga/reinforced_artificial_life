@@ -12,14 +12,14 @@ INIT_ENERGY = 500
 GRASS_ENERGY = 25
 IDLE_COST = 1
 MOVE_COST = 2
-START_NUM_CREATURES=1
+START_NUM_CREATURES = 6
+
 
 class World:
     def __init__(self, size, display, grass_fraction=0.2):
         self.counts = {}
-        display.scale = 4
-        display.offset_x = display.scale * size / 2
-        display.offset_y = display.scale * size / 2
+        display.offset_x = 0
+        display.offset_y = 0
         self.creatures = {}
         self.size = size
         self.cells = np.zeros((size, size))
@@ -27,11 +27,11 @@ class World:
         for i in np.random.choice(c, int(grass_fraction * c)):
             self.cells[i // size, i % size] = -1
 
-        for _ in range(START_NUM_CREATURES+1):
+        for _ in range(START_NUM_CREATURES):
+            x, y = self.free_spot()
+            self.add_new_creature(GreedyCow(x, y, INIT_ENERGY))
             x, y = self.free_spot()
             self.add_new_creature(SimpleCow(x, y, INIT_ENERGY))
-            x, y = self.free_spot()
-            self.add_new_creature(DeepCow(x, y, INIT_ENERGY))
 
     def free_spot(self):
         while True:
@@ -85,7 +85,7 @@ class World:
                 idx = self.cells[x, y]
                 if idx < 0:
                     color = (100, 240, 100)
-                    display.circle(color, x, y, 1)
+                    display.rectangle(x, y, 1, color)
                 elif idx > 0:
                     self.creatures[idx].draw(display)
 
@@ -132,4 +132,3 @@ class World:
         observation = rolled[size_2 - 1 : size_2 + 2, size_2 - 1 : size_2 + 2]
 
         return new_creature, observation, reward, done, {}
-
