@@ -85,18 +85,29 @@ class SimpleCow(object):
 
 
 class GreedyCow(SimpleCow):
-    def action(self, nearby):
+
+    def learn(self, state, reward, done):
+        self.state = state
+
+    def step(self):
+
+        if self.energy > MAX_ENERGY:
+            self.actioncolor = YELLOW
+            return Action.SPLIT
+
         neighbours = {
-            (self.x - 1, self.y): Action.LEFT,
-            (self.x + 1, self.y): Action.RIGHT,
-            (self.x, self.y - 1): Action.UP,
-            (self.x, self.y + 1): Action.DOWN,
+            (-1, 0): Action.UP,
+            ( 1, 0): Action.DOWN,
+            ( 0, 1): Action.RIGHT,
+            ( 0,-1): Action.LEFT,
         }
 
-        possible_actions = [
-            neighbours[(x, y)] for cell, x, y in nearby if (x, y) in neighbours.keys()
-        ]
+        possible_actions = []
+        for dir,action in neighbours.items():
+            if self.state[dir[0]+1, dir[1]+1] == -1:
+                possible_actions += [action]
+
         if possible_actions:
             return random.choice(possible_actions)
         else:
-            return super().action(nearby)
+            return random.choice(list(Action)[1:-1])
