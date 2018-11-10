@@ -34,9 +34,7 @@ def random_color():
 class World:
     """The world and the creatures in it. Also has an r-tree for collision detection."""
 
-    ZOOM = 1
-
-    def __init__(self, size):
+    def __init__(self, size, display):
         """Create a world with a size of size from the origin."""
         self.index = index.Index()
         self.size = size

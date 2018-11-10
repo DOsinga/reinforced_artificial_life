@@ -11,8 +11,10 @@ IDLE_COST = 1
 MOVE_COST = 2
 
 class World:
-    ZOOM = 4
-    def __init__(self, size, grass_fraction=0.1):
+    def __init__(self, size, display, grass_fraction=0.1):
+        display.scale = 4
+        display.offset_x = display.scale * size / 2
+        display.offset_y = display.scale * size / 2
         self.creatures = {}
         self.size = size
         self.cells = np.zeros((size, size))

@@ -15,10 +15,9 @@ TITLE = 'Reinforced Artificial Life'
 
 
 def main(WorldClass):
-    world = WorldClass(100)
-
     display = Display(TITLE, 640, 480)
-    display.scale = WorldClass.ZOOM
+    world = WorldClass(100, display)
+
     clock = pygame.time.Clock()
 
     while True:
