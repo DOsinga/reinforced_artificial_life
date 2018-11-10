@@ -30,13 +30,6 @@ class Display:
 
     def to_display_coords(self, x, y):
         return x * self.zoom, y * self.zoom
-        # x = int(x  - self.width / 2)
-        # y = int(y  - self.height / 2)
-        # return x, y
-
-    # def dot(self, color, x, y):
-    #    x, y = self.to_display_coords(x, y)
-    #    self.screen.set_at((x, y), color)
 
     def flip(self):
         pygame.display.flip()

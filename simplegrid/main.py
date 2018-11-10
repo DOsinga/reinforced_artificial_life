@@ -83,7 +83,6 @@ def main():
             agent.replay(BATCH_SIZE)
 
 
-
 if __name__ == '__main__':
     pygame.init()
     try:

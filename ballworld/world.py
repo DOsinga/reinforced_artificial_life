@@ -109,7 +109,6 @@ class World:
                 dead.add(creature)
             self.index.add(creature.id, creature.box())
 
-        # Bring out your dead - Grappig, ik wilde hetzelfde commentaar erbij zetten maar toen stond het er al :-)
         for creature in dead:
             del self.creatures[creature.id]
             self.index.delete(creature.id, creature.box())

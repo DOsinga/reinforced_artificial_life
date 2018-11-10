@@ -40,5 +40,12 @@ class Display:
                 color = tuple(map(lambda c: int(c * f), color))
             self.screen.set_at((x, y), color)
 
+    def rectangle(self, color, x, y, size):
+        x1, y1 = self.to_display_coords(x, y)
+        x2, y2 = self.to_display_coords(x + size, y + size)
+        w = x2 - x1
+        h = y2 - y1
+        pygame.draw.rect(self.screen, color, (x, y, w, h), 0)
+
     def flip(self):
         pygame.display.flip()

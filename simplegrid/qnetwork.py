@@ -2,7 +2,7 @@ import random
 import gym
 import numpy as np
 
-from collections import deque # double ended queue for experience memory
+from collections import deque  # double ended queue for experience memory
 
 from tensorflow.python.keras.models import Sequential
 from tensorflow.python.keras.layers import Dense
@@ -17,7 +17,7 @@ class DQNAgent:
         self.state_size = state_size
         self.action_size = action_size
         self.memory = deque(maxlen=2000)
-        self.gamma = 0.95    # discount rate
+        self.gamma = 0.95  # discount rate
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
@@ -30,42 +30,40 @@ class DQNAgent:
         model.add(Dense(24, input_dim=self.state_size, activation='relu'))
         model.add(Dense(24, activation='relu'))
         model.add(Dense(self.action_size, activation='linear'))
-        model.compile(loss='mse',
-                      optimizer=Adam(lr=self.learning_rate))
+        model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
 
         return model
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
 
-
-    #get action
+    # get action
     def act(self, state):
 
-        #select random action with prob=epsilon else action=maxQ
+        # select random action with prob=epsilon else action=maxQ
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.action_size)
         act_values = self.model.predict(state)
         return np.argmax(act_values[0])  # returns action
 
-    #experience replay
+    # experience replay
     def replay(self, batch_size):
 
-        #sample random transitions
+        # sample random transitions
         minibatch = random.sample(self.memory, batch_size)
 
         for state, action, reward, next_state, done in minibatch:
             target = reward
 
             if not done:
-                #calculate target for each minibatch
-                Q_next=self.model.predict(next_state)[0]
-                target = (reward + self.gamma *np.amax(Q_next))#Belman
+                # calculate target for each minibatch
+                Q_next = self.model.predict(next_state)[0]
+                target = reward + self.gamma * np.amax(Q_next)  # Belman
 
             target_f = self.model.predict(state)
             target_f[0][action] = target
 
-            #train network
+            # train network
             self.model.fit(state, target_f, epochs=1, verbose=0)
 
         if self.epsilon > self.epsilon_min:
@@ -96,7 +94,7 @@ if __name__ == '__main__':
 
             # env.render()
 
-            #e-greedy action
+            # e-greedy action
             action = agent.act(state)
 
             next_state, reward, done, _ = env.step(action)
@@ -105,16 +103,17 @@ if __name__ == '__main__':
 
             next_state = np.reshape(next_state, [1, state_size])
 
-            #add to experience memory
+            # add to experience memory
             agent.remember(state, action, reward, next_state, done)
 
             state = next_state
 
             if done:
-                print("episode: {}/{}, score: {}, e: {:.2}"
-                      .format(e, EPISODES, time, agent.epsilon))
+                print(
+                    "episode: {}/{}, score: {}, e: {:.2}".format(e, EPISODES, time, agent.epsilon)
+                )
                 break
 
-        #experience replay
+        # experience replay
         if len(agent.memory) > batch_size:
             agent.replay(batch_size)
