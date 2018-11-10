@@ -22,7 +22,7 @@ class World:
             self.cells[x, y] = -1
 
     def draw(self, display):
-        radius = 10
+        radius = 20
         size_2  = self.size / 2
         for x in range(self.size):
             for y in range(self.size):
