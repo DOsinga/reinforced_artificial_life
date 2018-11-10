@@ -1,13 +1,14 @@
 #!/usr/bin/env python
-from enum import IntEnum
-
 import numpy as np
 import random
 
 from simplegrid.cow import SimpleCow, Action
 
 MIN_ENERGY = 5
-
+INIT_ENERGY = 500
+GRASS_ENERGY = 25
+IDLE_COST = 1
+MOVE_COST = 2
 
 class World:
     ZOOM = 4
@@ -19,9 +20,9 @@ class World:
         for i in np.random.choice(c, int(grass_fraction * c)):
             self.cells[i // size, i % size] = -1
 
-        for _ in range(1):
+        for _ in range(10):
             x, y = self.free_spot()
-            creature = SimpleCow(x, y, 50)
+            creature = SimpleCow(x, y, INIT_ENERGY)
             self.creatures[creature.id] = creature
             self.cells[x, y] = creature.id
 
@@ -86,7 +87,7 @@ class World:
         new_creature = None
         reward = 0
         if action == Action.NONE:
-            creature.energy -= 1
+            creature.energy -= IDLE_COST
         elif action == Action.SPLIT:
             options = list(Action)
             random.shuffle(options)
@@ -102,11 +103,11 @@ class World:
             if self.cells[x, y] <= 0:
                 if self.cells[x, y] == -1:
                     reward = 1
-                    creature.energy += 10
+                    creature.energy += GRASS_ENERGY
                 creature.x = x
                 creature.y = y
             self.cells[creature.x, creature.y] = creature.id
-            #creature.energy -= 2
+            creature.energy -= MOVE_COST
 
         done = creature.energy < MIN_ENERGY
 

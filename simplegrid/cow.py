@@ -10,11 +10,7 @@ BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 
 
-MIN_ENERGY = 5
-MAX_ENERGY = 100
-
-# How far can creatures 'see'
-VISION_DISTANCE = 2
+MAX_ENERGY = 1000
 
 
 class Action(IntEnum):
@@ -73,10 +69,10 @@ class SimpleCow(object):
 
     def draw(self, display):
         display.circle(
-            self.color, self.x, self.y, 1 * min(1, math.sqrt(2 * self.energy / MAX_ENERGY))
+            self.color, self.x, self.y, 3 * min(1, math.sqrt(2 * self.energy / MAX_ENERGY))
         )
         display.circle(
-            self.actioncolor, self.x, self.y, 0.3 * min(1, math.sqrt(2 * self.energy / MAX_ENERGY))
+            self.actioncolor, self.x, self.y, 1 * min(1, math.sqrt(2 * self.energy / MAX_ENERGY))
         )
 
     def split(self):
