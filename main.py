@@ -6,6 +6,7 @@ import pygame
 from shared.display import Display
 from ballworld.world import World as BallWorld
 from simplegrid.world import World as GridWorld
+from shared.episode import Episode
 
 WORLDS = {'ball': BallWorld, 'grid': GridWorld}
 
@@ -20,7 +21,10 @@ def main(WorldClass):
     clock = pygame.time.Clock()
 
     while True:
-        world = WorldClass(WORLD_SIZE, display)
+
+        # Play an episode
+        episode = Episode()
+        world = WorldClass(WORLD_SIZE, display, episode)
 
         while True:
             # --- Event Processing
@@ -52,6 +56,8 @@ def main(WorldClass):
             clock.tick(FRAME_RATE)
             display.flip()
             pygame.display.set_caption(TITLE + ' ' + world.get_info())
+
+        episode.save()
 
 
 if __name__ == '__main__':

@@ -8,7 +8,7 @@ from simplegrid.cow import SimpleCow, GreedyCow, Action
 from simplegrid.deep_cow import DeepCow
 
 MIN_ENERGY = 5
-INIT_ENERGY = 500
+INIT_ENERGY = 100
 GRASS_ENERGY = 25
 IDLE_COST = 1
 MOVE_COST = 2
@@ -16,22 +16,27 @@ START_NUM_CREATURES = 6
 
 
 class World:
-    def __init__(self, size, display, grass_fraction=0.2):
+    def __init__(self, size, display, episode, grass_fraction=0.2):
         self.counts = {}
         display.offset_x = 0
         display.offset_y = 0
+        self.episode = episode
         self.creatures = {}
         self.size = size
         self.cells = np.zeros((size, size))
         c = size * size
         for i in np.random.choice(c, int(grass_fraction * c)):
-            self.cells[i // size, i % size] = -1
+            self.set_cell(i // size, i % size, -1)
 
         for _ in range(START_NUM_CREATURES):
             x, y = self.free_spot()
             self.add_new_creature(GreedyCow(x, y, INIT_ENERGY))
             x, y = self.free_spot()
             self.add_new_creature(SimpleCow(x, y, INIT_ENERGY))
+
+    def set_cell(self, x, y, value):
+        self.cells[x, y] = value
+        self.episode.grid_change(x, y, value)
 
     def free_spot(self):
         while True:
@@ -42,7 +47,8 @@ class World:
 
     def add_new_creature(self, creature):
         self.creatures[creature.id] = creature
-        self.cells[creature.x, creature.y] = creature.id
+        self.episode.creature_change(creature.id, creature.energy, type(creature).__name__)
+        self.set_cell(creature.x, creature.y, creature.id)
         _, state, reward, done, _ = self.process_action(creature, Action.NONE)
         creature.learn(state, reward, done)
 
@@ -63,7 +69,7 @@ class World:
                 born.append(new_creature)
 
         for creature in dead:
-            self.cells[creature.x, creature.y] = 0
+            self.set_cell(creature.x, creature.y, 0)
             del self.creatures[creature.id]
 
         for creature in born:
@@ -74,10 +80,15 @@ class World:
             x = random.randrange(self.size)
             y = random.randrange(self.size)
             if self.cells[x, y] == 0:
-                self.cells[x, y] = -1
+                self.set_cell(x, y, -1)
 
+        self.episode.next_frame()
         self.counts = Counter(creature.__class__.__name__ for creature in self.creatures.values())
-        return len(self.counts) == 2
+
+        game_active = len(self.counts) == 2
+        if not game_active:
+            self.episode.save()
+        return game_active
 
     def draw(self, display):
         for x in range(self.size):
@@ -113,7 +124,7 @@ class World:
                     reward = 10
                     break
         else:
-            self.cells[creature.x, creature.y] = 0
+            self.set_cell(creature.x, creature.y, 0)
             x, y = self.apply_direction(action, creature.x, creature.y)
             if self.cells[x, y] <= 0:
                 if self.cells[x, y] == -1:
@@ -121,10 +132,18 @@ class World:
                     creature.energy += GRASS_ENERGY
                 creature.x = x
                 creature.y = y
-            self.cells[creature.x, creature.y] = creature.id
+            self.set_cell(creature.x, creature.y, creature.id)
             creature.energy -= MOVE_COST
 
         done = creature.energy < MIN_ENERGY
+
+        creature_energy = creature.energy
+        if done:
+            creature_energy = 0
+        creature_type = None
+        if new_creature:
+            creature_type = type(creature).__name__
+        self.episode.creature_change(creature.id, creature_energy, creature_type)
 
         size_2 = self.size // 2
 
