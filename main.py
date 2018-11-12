@@ -12,7 +12,7 @@ WORLDS = {'ball': BallWorld, 'grid': GridWorld}
 
 FRAME_RATE = 60
 TITLE = 'Reinforced Artificial Life'
-WORLD_SIZE = 80
+WORLD_SIZE = 50
 SCALE = 8
 
 

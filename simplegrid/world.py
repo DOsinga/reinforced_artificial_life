@@ -12,11 +12,13 @@ INIT_ENERGY = 100
 GRASS_ENERGY = 25
 IDLE_COST = 1
 MOVE_COST = 2
+
 START_NUM_CREATURES = 6
+START_GRASS_FRACTION = 0.2
 
 
 class World:
-    def __init__(self, size, display, episode, grass_fraction=0.2):
+    def __init__(self, size, display, episode, grass_fraction=START_GRASS_FRACTION):
         self.counts = {}
         display.offset_x = 0
         display.offset_y = 0
@@ -96,7 +98,7 @@ class World:
                 idx = self.cells[x, y]
                 if idx < 0:
                     color = (100, 240, 100)
-                    display.rectangle(x, y, 1, color)
+                    display.rectangle(x, y, 1, color, padding=0.1)
                 elif idx > 0:
                     self.creatures[idx].draw(display)
 
