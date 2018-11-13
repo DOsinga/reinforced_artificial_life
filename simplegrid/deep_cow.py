@@ -1,9 +1,5 @@
-import math
-
-from simplegrid.cow import SimpleCow, Action
+from simplegrid.cow import SimpleCow, Action, MAX_ENERGY
 from simplegrid.dqn_agent import DQNAgent
-
-MAX_ENERGY = 1000
 
 
 class DeepCow(SimpleCow):
@@ -14,7 +10,7 @@ class DeepCow(SimpleCow):
         self.state = None
         self.action = Action.NONE
 
-    def step(self):
+    def step(self, observation):
         if self.energy > MAX_ENERGY:
             return Action.SPLIT
 
@@ -26,8 +22,3 @@ class DeepCow(SimpleCow):
     def learn(self, state, reward, done):
         DeepCow.agent.remember(self.state, self.action, reward, state, done)
         self.state = state
-
-    def draw(self, display):
-        display.circle(
-            self.color, self.x, self.y, 3 * min(1, math.sqrt(2 * self.energy / MAX_ENERGY))
-        )

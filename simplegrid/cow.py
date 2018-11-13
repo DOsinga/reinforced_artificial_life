@@ -24,18 +24,17 @@ class Action(IntEnum):
     def __repr__(self):
         return self.name
 
-    def direction(self):
-        dx = 0
-        dy = 0
-        if self == Action.UP:
-            dy = -1
-        elif self == Action.DOWN:
-            dy = 1
-        elif self == Action.LEFT:
-            dx = -1
-        elif self == Action.RIGHT:
-            dx = 1
-        return dx, dy
+    def to_direction(self):
+        return {
+            Action.UP: (0, -1),
+            Action.DOWN: (0, 1),
+            Action.RIGHT: (1, 0),
+            Action.LEFT: (-1, 0),
+        }[self]
+
+    def to_observation(self):
+        dir = self.to_direction()
+        return (dir[0] + 1, dir[1] + 1)
 
 
 def random_color():
@@ -57,7 +56,7 @@ class SimpleCow(object):
         self.id = SimpleCow.id_count
         SimpleCow.id_count += 1
 
-    def step(self):
+    def step(self, observation):
         if self.energy > MAX_ENERGY:
             self.actioncolor = YELLOW
             return Action.SPLIT
@@ -71,12 +70,13 @@ class SimpleCow(object):
         display.circle(
             self.x, self.y, min(0.8, math.sqrt(2 * self.energy / MAX_ENERGY)), self.color
         )
-        display.circle(
-            self.x,
-            self.y,
-            0.3 * min(0.8, math.sqrt(2 * self.energy / MAX_ENERGY)),
-            self.actioncolor,
-        )
+        # Action color is interesting for later. For now it has no use
+        # display.circle(
+        #     self.x,
+        #     self.y,
+        #     0.3 * min(0.8, math.sqrt(2 * self.energy / MAX_ENERGY)),
+        #     self.actioncolor,
+        # )
 
     def split(self):
         new_creature = self.__class__(self.x, self.y, self.energy / 2, color=self.color)
@@ -88,28 +88,18 @@ class SimpleCow(object):
 
 
 class GreedyCow(SimpleCow):
-    def learn(self, state, reward, done):
-        self.state = state
-
-    def step(self):
+    def step(self, observation):
 
         if self.energy > MAX_ENERGY:
             self.actioncolor = YELLOW
             return Action.SPLIT
 
-        neighbours = {
-            (0, 1): Action.UP,
-            (2, 1): Action.DOWN,
-            (1, 2): Action.RIGHT,
-            (1, 0): Action.LEFT,
-        }
+        possible_actions = list(Action)[1:-1]
+        interesting_actions = [
+            a for a in possible_actions if observation[a.to_observation()] == -1
+        ]
 
-        possible_actions = []
-        for dir, action in neighbours.items():
-            if self.state[dir] == -1:
-                possible_actions += [action]
-
-        if possible_actions:
-            return random.choice(possible_actions)
+        if interesting_actions:
+            return random.choice(interesting_actions)
         else:
-            return random.choice(list(Action)[1:-1])
+            return random.choice(possible_actions)

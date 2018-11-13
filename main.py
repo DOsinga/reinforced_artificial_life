@@ -12,8 +12,8 @@ WORLDS = {'ball': BallWorld, 'grid': GridWorld}
 
 FRAME_RATE = 60
 TITLE = 'Reinforced Artificial Life'
-WORLD_SIZE = 50
-SCALE = 8
+WORLD_SIZE = 60
+SCALE = 10
 
 
 def main(WorldClass):

@@ -4,17 +4,17 @@ from collections import Counter
 import numpy as np
 import random
 
-from simplegrid.cow import SimpleCow, GreedyCow, Action
+from simplegrid.cow import SimpleCow, GreedyCow, Action, BLUE, RED, YELLOW
 from simplegrid.deep_cow import DeepCow
 
 MIN_ENERGY = 5
 INIT_ENERGY = 100
-GRASS_ENERGY = 25
+GRASS_ENERGY = 15
 IDLE_COST = 1
 MOVE_COST = 2
 
 START_NUM_CREATURES = 6
-START_GRASS_FRACTION = 0.2
+START_GRASS_FRACTION = 0.3
 
 
 class World:
@@ -32,9 +32,9 @@ class World:
 
         for _ in range(START_NUM_CREATURES):
             x, y = self.free_spot()
-            self.add_new_creature(GreedyCow(x, y, INIT_ENERGY))
+            self.add_new_creature(GreedyCow(x, y, INIT_ENERGY, RED))
             x, y = self.free_spot()
-            self.add_new_creature(SimpleCow(x, y, INIT_ENERGY))
+            self.add_new_creature(DeepCow(x, y, INIT_ENERGY, YELLOW))
 
     def set_cell(self, x, y, value):
         self.cells[x, y] = value
@@ -54,6 +54,11 @@ class World:
         _, state, reward, done, _ = self.process_action(creature, Action.NONE)
         creature.learn(state, reward, done)
 
+    def get_observation(self, creature):
+        size_2 = self.size // 2
+        rolled = np.roll(self.cells, (size_2 - creature.x, size_2 - creature.y), (0, 1))
+        return rolled[size_2 - 1 : size_2 + 2, size_2 - 1 : size_2 + 2]
+
     def step(self):
         dead = set()
         born = []
@@ -61,7 +66,7 @@ class World:
             if creature.id in dead:
                 continue
 
-            action = creature.step()
+            action = creature.step(self.get_observation(creature))
             new_creature, state, reward, done, _ = self.process_action(creature, action)
             creature.learn(state, reward, done)
 
@@ -106,7 +111,7 @@ class World:
         return ' '.join(k + ': ' + str(v) for k, v in self.counts.items())
 
     def apply_direction(self, option, x, y):
-        dx, dy = option.direction()
+        dx, dy = option.to_direction()
         x = (x + dx) % self.size
         y = (y + dy) % self.size
         return x, y
@@ -147,9 +152,24 @@ class World:
             creature_type = type(creature).__name__
         self.episode.creature_change(creature.id, creature_energy, creature_type)
 
-        size_2 = self.size // 2
-
-        rolled = np.roll(self.cells, (size_2 - creature.x, size_2 - creature.y), (0, 1))
-        observation = rolled[size_2 - 1 : size_2 + 2, size_2 - 1 : size_2 + 2]
-
+        observation = self.get_observation(creature)
         return new_creature, observation, reward, done, {}
+
+    def print(self):
+        '''Prints the current screen as ascii chars to the console. Convenient for debugging.'''
+        print('')
+        print('  ', end='')
+        for x in range(self.size):
+            print(f'{x:>3}', end='')
+        print()
+        for y in range(self.size):
+            print(f'{y:>2}' + ' ', end='')
+            for x in range(self.size):
+                if self.cells[x][y] == -1:
+                    c = '.'
+                elif self.cells[x][y] == 0:
+                    c = ' '
+                else:
+                    c = 'C'
+                print(' ' + c + ' ', end='')
+            print()
