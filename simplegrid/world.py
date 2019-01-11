@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from collections import Counter
+from collections import Counter, defaultdict
 
 import numpy as np
 import random
@@ -62,6 +62,7 @@ class World:
     def step(self):
         dead = set()
         born = []
+        self.energys = defaultdict(int)
         for creature in self.creatures.values():
             if creature.id in dead:
                 continue
@@ -74,6 +75,8 @@ class World:
                 dead.add(creature)
             if new_creature:
                 born.append(new_creature)
+
+            self.energys[creature.__class__.__name__] += creature.energy
 
         for creature in dead:
             self.set_cell(creature.x, creature.y, 0)
@@ -106,6 +109,9 @@ class World:
                     display.rectangle(x, y, 1, color, padding=0.1)
                 elif idx > 0:
                     self.creatures[idx].draw(display)
+        for k, v in self.counts.items():
+            display.sidebar[k] = v
+            display.sidebar[k+' energy'] = self.energys[k]
 
     def get_info(self):
         return ' '.join(k + ': ' + str(v) for k, v in self.counts.items())
