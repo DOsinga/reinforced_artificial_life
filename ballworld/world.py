@@ -34,7 +34,7 @@ def random_color():
 class World:
     """The world and the creatures in it. Also has an r-tree for collision detection."""
 
-    def __init__(self, size):
+    def __init__(self, size, display):
         """Create a world with a size of size from the origin."""
         self.index = index.Index()
         self.size = size
@@ -109,7 +109,6 @@ class World:
                 dead.add(creature)
             self.index.add(creature.id, creature.box())
 
-        # Bring out your dead - Grappig, ik wilde hetzelfde commentaar erbij zetten maar toen stond het er al :-)
         for creature in dead:
             del self.creatures[creature.id]
             self.index.delete(creature.id, creature.box())
