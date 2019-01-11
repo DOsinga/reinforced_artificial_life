@@ -21,7 +21,7 @@ class DQNAgent:
         self.model = self._build_model()
 
     def _build_model(self):
-        # Neural Net for Deep-Q learning Model--->>  #Q=NN.predict(state)
+        """ Neural Net for Deep-Q learning Model--->>  #Q=NN.predict(state)"""
         model = Sequential()
         model.add(Dense(24, input_dim=self.state_size, activation='relu'))
         model.add(Dense(24, activation='relu'))
@@ -35,14 +35,13 @@ class DQNAgent:
 
     # get action
     def act(self, state):
-        '''
-        state is a 2-dimensional ndarray representing the surrounding squares
+        """state is a 2-dimensional ndarray representing the surrounding squares
         returns a random action with prob=epsilon else action=maxQ
-        '''
+        """
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.action_size)
         act_values = self.predict(state)
-        return np.argmax(act_values)  # returns action
+        return np.argmax(act_values[0])  # returns action
 
     def predict(self, state):
         state = np.reshape(state, (1, -1))  # e.g. [[0,0,0, 0,2,0, -1,0,-0]]
@@ -53,10 +52,9 @@ class DQNAgent:
         self.model.fit(state, target_f, epochs=1, verbose=0)
 
     def replay(self, batch_size):
-        '''
-        Replay memories so older stuff doesn't get overwritten what we've learned.
+        """Replay memories so older stuff doesn't get overwritten what we've learned.
         Also allows us to reinterpret experiences. Maybe dreaming works like this?
-        '''
+        """
         minibatch = random.sample(self.memory, batch_size)
 
         for state, action, reward, next_state, done in minibatch:
