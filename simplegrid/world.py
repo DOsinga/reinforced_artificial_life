@@ -111,7 +111,7 @@ class World:
                     self.creatures[idx].draw(display)
         for k, v in self.counts.items():
             display.sidebar[k] = v
-            display.sidebar[k+' energy'] = self.energys[k]
+            display.sidebar[k + ' energy'] = self.energys[k]
 
     def get_info(self):
         return ' '.join(k + ': ' + str(v) for k, v in self.counts.items())
