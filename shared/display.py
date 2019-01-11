@@ -3,6 +3,7 @@ from collections import OrderedDict
 
 sidebar_width = 200
 
+
 class Display:
     def __init__(self, title, world_size, initial_scale, delay=30):
         self.width = world_size * initial_scale
@@ -11,7 +12,7 @@ class Display:
         self.initial_scale = initial_scale
         self.reset_offsets()
 
-        self.screen = pygame.display.set_mode((self.width+ sidebar_width, self.height))
+        self.screen = pygame.display.set_mode((self.width + sidebar_width, self.height))
         pygame.display.set_caption(title)
         self.font = pygame.font.SysFont('Arial', 11)
         self.sidebar = OrderedDict()
@@ -47,7 +48,7 @@ class Display:
 
     def draw_text(self, x, y, text):
         rendered = self.font.render(text, True, pygame.Color("white"))
-        self.screen.blit(rendered, (x+self.width, y))
+        self.screen.blit(rendered, (x + self.width, y))
         pygame.display.update()
 
     def draw_sidebar(self):
@@ -55,5 +56,4 @@ class Display:
         for key, val in self.sidebar.items():
             self.draw_text(10, y, key)
             self.draw_text(140, y, str(val))
-            y+=30
-
+            y += 30
