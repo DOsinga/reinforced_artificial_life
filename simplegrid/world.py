@@ -122,7 +122,8 @@ class World:
         if action == Action.NONE:
             creature.energy -= IDLE_COST
         elif action == Action.SPLIT:
-            options = list(Action)
+            # Try to find an empty spot
+            options = list(Action)[1:-1]  #
             random.shuffle(options)
             for option in options:
                 x, y = self.apply_direction(option, creature.x, creature.y)
