@@ -1,0 +1,1 @@
+VIEW_DISTANCE = 2
