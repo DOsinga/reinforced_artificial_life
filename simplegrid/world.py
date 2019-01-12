@@ -62,7 +62,7 @@ class World:
     def step(self):
         dead = set()
         born = []
-        self.energys = defaultdict(int)
+        self.energies = defaultdict(int)
         for creature in self.creatures.values():
             if creature.id in dead:
                 continue
@@ -76,7 +76,7 @@ class World:
             if new_creature:
                 born.append(new_creature)
 
-            self.energys[creature.__class__.__name__] += creature.energy
+            self.energies[creature.__class__.__name__] += creature.energy
 
         for creature in dead:
             self.set_cell(creature.x, creature.y, 0)
@@ -111,7 +111,7 @@ class World:
                     self.creatures[idx].draw(display)
         for k, v in self.counts.items():
             display.sidebar[k] = v
-            display.sidebar[k + ' energy'] = self.energys[k]
+            display.sidebar[k + ' energy'] = self.energies[k]
 
     def get_info(self):
         return ' '.join(k + ': ' + str(v) for k, v in self.counts.items())
