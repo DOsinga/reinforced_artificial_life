@@ -173,7 +173,7 @@ class World:
         return new_creature, observation, reward, done, {}
 
     def print(self):
-        '''Prints the current screen as ascii chars to the console. Convenient for debugging.'''
+        """Prints the current screen as ascii chars to the console. Convenient for debugging."""
         print('')
         print('  ', end='')
         for x in range(self.size):
