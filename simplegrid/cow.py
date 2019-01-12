@@ -2,6 +2,7 @@ import colorsys
 import math
 import random
 from enum import IntEnum
+from shared.constants import VIEW_DISTANCE
 
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -34,7 +35,7 @@ class Action(IntEnum):
 
     def to_observation(self):
         dir = self.to_direction()
-        return (dir[0] + 1, dir[1] + 1)
+        return (dir[0] + VIEW_DISTANCE, dir[1] + VIEW_DISTANCE)
 
 
 def random_color():

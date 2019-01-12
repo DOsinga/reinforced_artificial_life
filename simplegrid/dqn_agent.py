@@ -68,7 +68,8 @@ class DQNAgent:
                 Q_next = self.predict(next_state)[0]
                 target = reward + self.gamma * np.amax(Q_next)  # Belman
 
-            target_f = self.predict(state)
+            # What would I do now with this state
+            target_f = self.predict(state) # Retuns list of opbrengst/action
 
             estimation_error_sum += abs(target_f[0][action] - target)
             target_f[0][action] = target
