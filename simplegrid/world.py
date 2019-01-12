@@ -6,7 +6,6 @@ import random
 
 from simplegrid.cow import SimpleCow, GreedyCow, Action, BLUE, RED, YELLOW
 from simplegrid.deep_cow import DeepCow
-from simplegrid.dqn_agent import DQNAgent
 
 MIN_ENERGY = 5
 INIT_ENERGY = 100
