@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from collections import Counter
+from collections import Counter, defaultdict
 
 import numpy as np
 import random
@@ -7,6 +7,7 @@ import random
 from simplegrid.cow import SimpleCow, GreedyCow, Action, BLUE, RED, YELLOW
 from simplegrid.deep_cow import DeepCow
 from simplegrid.dqn_agent import DQNAgent
+from shared.constants import VIEW_DISTANCE
 
 MIN_ENERGY = 5
 INIT_ENERGY = 100
@@ -27,12 +28,14 @@ class World:
         self.creatures = {}
         self.size = size
         self.cells = np.zeros((size, size))
+        self.steps = 0
 
     def reset(self, episode, grass_fraction=START_GRASS_FRACTION):
         self.counts = {}
         self.episode = episode
         self.creatures = {}
         self.cells.fill(0)
+        self.steps = 0
         c = self.size * self.size
         for i in np.random.choice(c, int(grass_fraction * c)):
             self.set_cell(i // self.size, i % self.size, -1)
@@ -44,7 +47,7 @@ class World:
             self.add_new_creature(DeepCow(x, y, INIT_ENERGY, YELLOW))
 
     def end(self):
-        DeepCow.replay()
+        print('stats', self.steps, DeepCow.replay())
 
     def set_cell(self, x, y, value):
         self.cells[x, y] = value
@@ -67,11 +70,16 @@ class World:
     def get_observation(self, creature):
         size_2 = self.size // 2
         rolled = np.roll(self.cells, (size_2 - creature.x, size_2 - creature.y), (0, 1))
-        return rolled[size_2 - 1 : size_2 + 2, size_2 - 1 : size_2 + 2]
+        return rolled[
+            size_2 - VIEW_DISTANCE : size_2 + VIEW_DISTANCE + 1,
+            size_2 - VIEW_DISTANCE : size_2 + VIEW_DISTANCE + 1,
+        ]
 
     def step(self):
+        self.steps += 1
         dead = set()
         born = []
+        self.energies = defaultdict(int)
         for creature in self.creatures.values():
             if creature.id in dead:
                 continue
@@ -84,6 +92,8 @@ class World:
                 dead.add(creature)
             if new_creature:
                 born.append(new_creature)
+
+            self.energies[creature.__class__.__name__] += creature.energy
 
         for creature in dead:
             self.set_cell(creature.x, creature.y, 0)
@@ -116,6 +126,9 @@ class World:
                     display.rectangle(x, y, 1, color, padding=0.1)
                 elif idx > 0:
                     self.creatures[idx].draw(display)
+        for k, v in self.counts.items():
+            display.sidebar[k] = v
+            display.sidebar[k + ' energy'] = self.energies[k]
 
     def get_info(self):
         return ' '.join(k + ': ' + str(v) for k, v in self.counts.items())
