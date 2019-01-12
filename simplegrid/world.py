@@ -6,35 +6,44 @@ import random
 
 from simplegrid.cow import SimpleCow, GreedyCow, Action, BLUE, RED, YELLOW
 from simplegrid.deep_cow import DeepCow
+from simplegrid.dqn_agent import DQNAgent
 
 MIN_ENERGY = 5
 INIT_ENERGY = 100
 GRASS_ENERGY = 15
 IDLE_COST = 1
 MOVE_COST = 2
+BATCH_SIZE = 32
 
 START_NUM_CREATURES = 6
 START_GRASS_FRACTION = 0.3
 
 
 class World:
-    def __init__(self, size, display, episode, grass_fraction=START_GRASS_FRACTION):
+    def __init__(self, size, display):
         self.counts = {}
         display.offset_x = 0
         display.offset_y = 0
-        self.episode = episode
         self.creatures = {}
         self.size = size
         self.cells = np.zeros((size, size))
-        c = size * size
+
+    def reset(self, episode, grass_fraction=START_GRASS_FRACTION):
+        self.counts = {}
+        self.episode = episode
+        self.creatures = {}
+        c = self.size * self.size
         for i in np.random.choice(c, int(grass_fraction * c)):
-            self.set_cell(i // size, i % size, -1)
+            self.set_cell(i // self.size, i % self.size, -1)
 
         for _ in range(START_NUM_CREATURES):
             x, y = self.free_spot()
             self.add_new_creature(GreedyCow(x, y, INIT_ENERGY, RED))
             x, y = self.free_spot()
             self.add_new_creature(DeepCow(x, y, INIT_ENERGY, YELLOW))
+
+    def end(self):
+        DeepCow.replay()
 
     def set_cell(self, x, y, value):
         self.cells[x, y] = value
@@ -68,6 +77,8 @@ class World:
 
             action = creature.step(self.get_observation(creature))
             new_creature, state, reward, done, _ = self.process_action(creature, action)
+            if creature.energy < 0:
+                print(creature)
             creature.learn(state, reward, done)
 
             if done:
@@ -81,6 +92,10 @@ class World:
 
         for creature in born:
             self.add_new_creature(creature)
+
+        for creature in self.creatures.values():
+            if creature.energy < 0:
+                print(creature)
 
         # Watching grass grow
         for _ in range(3):

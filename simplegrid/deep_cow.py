@@ -1,9 +1,10 @@
 from simplegrid.cow import SimpleCow, Action, MAX_ENERGY
 from simplegrid.dqn_agent import DQNAgent
 
+BATCH_SIZE = 32
 
 class DeepCow(SimpleCow):
-    agent = DQNAgent(9, 4)
+    agent = DQNAgent(9, 5)
 
     def __init__(self, x, y, energy, color=None):
         super().__init__(x, y, energy, color)
@@ -22,3 +23,9 @@ class DeepCow(SimpleCow):
     def learn(self, state, reward, done):
         DeepCow.agent.remember(self.state, self.action, reward, state, done)
         self.state = state
+
+    @classmethod
+    def replay(cls):
+        if len(DeepCow.agent.memory) > BATCH_SIZE:
+            DeepCow.agent.replay(BATCH_SIZE)
+
