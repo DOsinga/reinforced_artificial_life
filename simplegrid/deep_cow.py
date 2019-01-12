@@ -2,9 +2,10 @@ from simplegrid.cow import SimpleCow, Action, MAX_ENERGY
 from simplegrid.dqn_agent import DQNAgent
 from shared.constants import VIEW_DISTANCE
 
+
 class DeepCow(SimpleCow):
-    state_size = (2*VIEW_DISTANCE+1)*(2*VIEW_DISTANCE+1)
-    agent = DQNAgent(state_size, action_size = 4)
+    state_size = (2 * VIEW_DISTANCE + 1) * (2 * VIEW_DISTANCE + 1)
+    agent = DQNAgent(state_size, action_size=4)
 
     def __init__(self, x, y, energy, color=None):
         super().__init__(x, y, energy, color)
@@ -26,4 +27,3 @@ class DeepCow(SimpleCow):
     @classmethod
     def replay(cls):
         return DeepCow.agent.replay()
-
