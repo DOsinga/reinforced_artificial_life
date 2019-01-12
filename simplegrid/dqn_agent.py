@@ -12,7 +12,7 @@ class DQNAgent:
     def __init__(self, state_size, action_size):
         self.state_size = state_size
         self.action_size = action_size
-        self.memory = deque(maxlen=2000)
+        self.memory = deque(maxlen=5000)
         self.gamma = 0.95  # discount rate
         self.epsilon = 0.8  # exploration rate
         self.epsilon_min = 0.01
@@ -51,13 +51,16 @@ class DQNAgent:
         state = np.reshape(state, (1, -1))
         self.model.fit(state, target_f, epochs=1, verbose=0)
 
-    def replay(self, batch_size):
+    def replay(self):
         """Replay memories so older stuff doesn't get overwritten what we've learned.
         Also allows us to reinterpret experiences. Maybe dreaming works like this?
         """
-        minibatch = random.sample(self.memory, batch_size)
+        batch = [*self.memory]
+        random.shuffle(batch)
 
-        for state, action, reward, next_state, done in minibatch:
+        estimation_error_sum = 0
+
+        for state, action, reward, next_state, done in batch:
             target = reward
 
             if not done:
@@ -66,6 +69,8 @@ class DQNAgent:
                 target = reward + self.gamma * np.amax(Q_next)  # Belman
 
             target_f = self.predict(state)
+
+            estimation_error_sum += abs(target_f[0][action] - target)
             target_f[0][action] = target
 
             # train network
@@ -73,6 +78,8 @@ class DQNAgent:
 
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
+
+        return estimation_error_sum / len(batch)
 
     def load(self, name):
         self.model.load_weights(name)

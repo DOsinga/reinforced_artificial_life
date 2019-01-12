@@ -27,12 +27,14 @@ class World:
         self.creatures = {}
         self.size = size
         self.cells = np.zeros((size, size))
+        self.steps = 0
 
     def reset(self, episode, grass_fraction=START_GRASS_FRACTION):
         self.counts = {}
         self.episode = episode
         self.creatures = {}
         self.cells.fill(0)
+        self.steps = 0
         c = self.size * self.size
         for i in np.random.choice(c, int(grass_fraction * c)):
             self.set_cell(i // self.size, i % self.size, -1)
@@ -44,7 +46,7 @@ class World:
             self.add_new_creature(DeepCow(x, y, INIT_ENERGY, YELLOW))
 
     def end(self):
-        DeepCow.replay()
+        print('stats', self.steps, DeepCow.replay())
 
     def set_cell(self, x, y, value):
         self.cells[x, y] = value
@@ -70,6 +72,7 @@ class World:
         return rolled[size_2 - 1 : size_2 + 2, size_2 - 1 : size_2 + 2]
 
     def step(self):
+        self.steps += 1
         dead = set()
         born = []
         self.energies = defaultdict(int)
