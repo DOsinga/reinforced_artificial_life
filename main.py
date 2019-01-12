@@ -20,12 +20,14 @@ def main(WorldClass):
     display = Display(TITLE, WORLD_SIZE, SCALE)
     clock = pygame.time.Clock()
 
+    world = WorldClass(WORLD_SIZE, display)
+
     while True:
 
         # Play an episode
         episode = Episode()
-        world = WorldClass(WORLD_SIZE, display, episode)
 
+        world.reset(episode)
         while True:
             # --- Event Processing
             for event in pygame.event.get():
@@ -56,6 +58,7 @@ def main(WorldClass):
             clock.tick(FRAME_RATE)
             display.flip()
             pygame.display.set_caption(TITLE + ' ' + world.get_info())
+        world.end()
 
         episode.save()
 

@@ -68,7 +68,7 @@ class SimpleCow(object):
 
     def draw(self, display):
         display.circle(
-            self.x, self.y, min(0.8, math.sqrt(2 * self.energy / MAX_ENERGY)), self.color
+            self.x, self.y, math.sqrt(min(0.64, 2 * self.energy / MAX_ENERGY)), self.color
         )
         # Action color is interesting for later. For now it has no use
         # display.circle(

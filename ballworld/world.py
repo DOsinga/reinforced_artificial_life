@@ -36,14 +36,17 @@ class World:
 
     def __init__(self, size, display):
         """Create a world with a size of size from the origin."""
-        self.index = index.Index()
         self.size = size
+        self.index = index.Index()
         self.creatures = {}
         for _ in range(START_NUM_CREATURES):
             self.add_creature(self.random_creature())
         self.grass = {}
         while len(self.grass) < GRASS_COUNT:
             self.add_grass()
+
+    def reset(self, episode):
+        pass
 
     def add_creature(self, creature):
         self.creatures[creature.id] = creature
