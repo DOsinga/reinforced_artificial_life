@@ -7,6 +7,7 @@ import random
 from simplegrid.cow import SimpleCow, GreedyCow, Action, BLUE, RED, YELLOW
 from simplegrid.deep_cow import DeepCow
 from simplegrid.dqn_agent import DQNAgent
+from shared.constants import VIEW_DISTANCE
 
 MIN_ENERGY = 5
 INIT_ENERGY = 100
@@ -17,7 +18,6 @@ BATCH_SIZE = 32
 
 START_NUM_CREATURES = 6
 START_GRASS_FRACTION = 0.3
-
 
 class World:
     def __init__(self, size, display):
@@ -69,7 +69,8 @@ class World:
     def get_observation(self, creature):
         size_2 = self.size // 2
         rolled = np.roll(self.cells, (size_2 - creature.x, size_2 - creature.y), (0, 1))
-        return rolled[size_2 - 1 : size_2 + 2, size_2 - 1 : size_2 + 2]
+        return rolled[size_2 - VIEW_DISTANCE : size_2 + VIEW_DISTANCE + 1,
+                      size_2 - VIEW_DISTANCE : size_2 + VIEW_DISTANCE + 1]
 
     def step(self):
         self.steps += 1
