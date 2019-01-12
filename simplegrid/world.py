@@ -32,6 +32,7 @@ class World:
         self.counts = {}
         self.episode = episode
         self.creatures = {}
+        self.cells.fill(0)
         c = self.size * self.size
         for i in np.random.choice(c, int(grass_fraction * c)):
             self.set_cell(i // self.size, i % self.size, -1)
@@ -77,8 +78,6 @@ class World:
 
             action = creature.step(self.get_observation(creature))
             new_creature, state, reward, done, _ = self.process_action(creature, action)
-            if creature.energy < 0:
-                print(creature)
             creature.learn(state, reward, done)
 
             if done:
@@ -92,10 +91,6 @@ class World:
 
         for creature in born:
             self.add_new_creature(creature)
-
-        for creature in self.creatures.values():
-            if creature.energy < 0:
-                print(creature)
 
         # Watching grass grow
         for _ in range(3):
