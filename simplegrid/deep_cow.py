@@ -34,9 +34,7 @@ class DeepCow(SimpleCow):
 
         # Temporarily return a much simpler state, just the directions:
         # (up, right, down, left):
-        return np.asarray([
-            grass[3], grass[7], grass[5], grass[1]
-        ])
+        return np.asarray([grass[3], grass[7], grass[5], grass[1]])
 
         # return np.concatenate((grass, cows))
 
@@ -56,7 +54,9 @@ class DeepCow(SimpleCow):
     def learn(self, reward, done):
         self.reward = reward
         if self.prev_state is not None and self.state is not None:
-            DeepCow.agent.remember(self.prev_state, self.prev_action_idx, self.prev_reward, self.state)
+            DeepCow.agent.remember(
+                self.prev_state, self.prev_action_idx, self.prev_reward, self.state
+            )
 
     @classmethod
     def replay(cls):

@@ -65,7 +65,6 @@ def main(WorldClass):
         world.end(state_pattern)
 
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--world', type=str, choices=list(WORLDS), required=True)

@@ -106,5 +106,10 @@ class DQNAgent:
                 state = [float(x) for x in state]
                 if next is not None:
                     next_state = [float(x) for x in next_state]
-                record = {'state': state, 'action': int(action), 'reward': float(reward), 'next_state': next_state}
+                record = {
+                    'state': state,
+                    'action': int(action),
+                    'reward': float(reward),
+                    'next_state': next_state,
+                }
                 fout.write(json.dumps(record) + '\n')
