@@ -1,37 +1,29 @@
 #!/usr/bin/env python
 import os
+import random
 from collections import Counter, defaultdict
 
 import numpy as np
-import random
 
-import shared.constants as constants
-from simplegrid.cow import SimpleCow, GreedyCow, Action, BLUE, RED, YELLOW
+from simplegrid.cow import GreedyCow, Action, RED, YELLOW
 from simplegrid.deep_cow import DeepCow
-from shared.constants import VIEW_DISTANCE
-
-MIN_ENERGY = 5
-INIT_ENERGY = 100
-GRASS_ENERGY = 15
-IDLE_COST = 1
-MOVE_COST = 2
-BATCH_SIZE = 32
-
-START_NUM_CREATURES = 6
-START_GRASS_FRACTION = 0.3
 
 
 class World:
-    def __init__(self, size, display):
+    def __init__(self, settings, display):
         self.counts = {}
         display.offset_x = 0
         display.offset_y = 0
         self.creatures = {}
-        self.size = size
-        self.cells = np.zeros((size, size))
+        self.settings = settings
+        self.size = settings.world_size
+        self.cells = np.zeros((self.size, self.size))
         self.steps = 0
+        DeepCow.restore_state(settings)
 
-    def reset(self, episode, grass_fraction=START_GRASS_FRACTION):
+    def reset(self, episode, grass_fraction=None):
+        if grass_fraction is None:
+            grass_fraction = self.settings.grass_fraction
         self.counts = {}
         self.episode = episode
         self.creatures = {}
@@ -41,18 +33,15 @@ class World:
         for i in np.random.choice(c, int(grass_fraction * c)):
             self.set_cell(i // self.size, i % self.size, -1)
 
-        for _ in range(START_NUM_CREATURES):
+        for _ in range(self.settings.start_num_creatures):
             x, y = self.free_spot()
-            self.add_new_creature(GreedyCow(x, y, INIT_ENERGY, RED))
+            self.add_new_creature(GreedyCow(x, y, self.settings.init_energy, RED))
             x, y = self.free_spot()
-            self.add_new_creature(DeepCow(x, y, INIT_ENERGY, YELLOW))
+            self.add_new_creature(DeepCow(x, y, self.settings.init_energy, YELLOW))
 
-    def end(self, state_pattern):
-        state_pattern = str(state_pattern)
-        os.makedirs(os.path.dirname(state_pattern), exist_ok=True)
-        self.episode.save(state_pattern.format(filename=constants.EPISODE_FILE))
-        DeepCow.agent.save_history(state_pattern.format(filename=constants.HISTORY_FILE))
-        DeepCow.agent.save_weights(state_pattern.format(filename=constants.WEIGHTS_FILE))
+    def end(self):
+        self.episode.save(self.settings)
+        DeepCow.save_state(self.settings)
         print('stats', self.steps, DeepCow.replay())
 
     def set_cell(self, x, y, value):
@@ -74,13 +63,16 @@ class World:
     def get_observation(self, creature):
         size_2 = self.size // 2
         rolled = np.roll(self.cells, (size_2 - creature.x, size_2 - creature.y), (0, 1))
+        view_distance = self.settings.view_distance
         return rolled[
-            size_2 - VIEW_DISTANCE : size_2 + VIEW_DISTANCE + 1,
-            size_2 - VIEW_DISTANCE : size_2 + VIEW_DISTANCE + 1,
+            size_2 - view_distance : size_2 + view_distance + 1,
+            size_2 - view_distance : size_2 + view_distance + 1,
         ]
 
     def step(self):
         self.steps += 1
+        if self.steps == self.settings.steps_per_episode:
+            return False
         dead = set()
         born = []
         self.energies = defaultdict(int)
@@ -155,7 +147,7 @@ class World:
         new_creature = None
         reward = 0
         if action == Action.NONE:
-            creature.energy -= IDLE_COST
+            creature.energy -= self.settings.idle_cost
         elif action == Action.SPLIT:
             # Try to find an empty spot
             options = list(Action)[1:-1]  #
@@ -172,13 +164,13 @@ class World:
             if self.cells[x, y] <= 0:
                 if self.cells[x, y] == -1:
                     reward = 1
-                    creature.energy += GRASS_ENERGY
+                    creature.energy += self.settings.grass_energy
                 creature.x = x
                 creature.y = y
             self.set_cell(creature.x, creature.y, creature.id)
-            creature.energy -= MOVE_COST
+            creature.energy -= self.settings.move_cost
 
-        done = creature.energy < MIN_ENERGY
+        done = creature.energy < self.settings.min_energy
 
         creature_energy = creature.energy
         if done:

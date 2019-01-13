@@ -1,35 +1,31 @@
 #!/usr/bin/env python
 import argparse
+import itertools
 
 import pygame
 
 from shared.display import Display
 from ballworld.world import World as BallWorld
+from shared.experiment_settings import ExperimentSettings
 from simplegrid.world import World as GridWorld
 from shared.episode import Episode
-import shared.constants as constants
 
 WORLDS = {'ball': BallWorld, 'grid': GridWorld}
 
 FRAME_RATE = 60
 TITLE = 'Reinforced Artificial Life'
-WORLD_SIZE = 60
-SCALE = 10
 
 
-def main(WorldClass):
+def main(WorldClass, settings):
 
-    display = Display(TITLE, WORLD_SIZE, SCALE)
+    display = Display(TITLE, settings.world_size, settings.scale)
     clock = pygame.time.Clock()
 
-    world = WorldClass(WORLD_SIZE, display)
+    world = WorldClass(settings, display)
 
-    episode_count = 0
-    while True:
-
+    for episode_count in itertools.count():
         # Play an episode
         episode = Episode()
-        episode_count += 1
         display.sidebar['episode'] = episode_count
 
         world.reset(episode)
@@ -63,15 +59,24 @@ def main(WorldClass):
             clock.tick(FRAME_RATE)
             display.flip()
             pygame.display.set_caption(TITLE + ' ' + world.get_info())
-        world.end(constants.state_pattern)
+        world.end()
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--world', type=str, choices=list(WORLDS), required=True)
+    parser.add_argument(
+        '--experiment',
+        type=str,
+        required=False,
+        help='Optional argument specifying the experiment to run. This should be a directory '
+        'where the specific settings and various state files are stored. Directoy will '
+        'be created and initialized if it does not exist.',
+    )
     args = parser.parse_args()
+    settings = ExperimentSettings(args.experiment)
     pygame.init()
     try:
-        main(WORLDS[args.world])
+        main(WORLDS[args.world], settings)
     finally:
         pygame.quit()

@@ -2,7 +2,6 @@ import colorsys
 import math
 import random
 from enum import IntEnum
-from shared.constants import VIEW_DISTANCE
 
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -33,9 +32,9 @@ class Action(IntEnum):
             Action.LEFT: (-1, 0),
         }[self]
 
-    def to_observation(self):
+    def to_observation(self, offset):
         dir = self.to_direction()
-        return (dir[0] + VIEW_DISTANCE, dir[1] + VIEW_DISTANCE)
+        return dir[0] + offset, dir[1] + offset
 
 
 def random_color():
@@ -95,9 +94,10 @@ class GreedyCow(SimpleCow):
             self.actioncolor = YELLOW
             return Action.SPLIT
 
+        offset = observation.shape[0] // 2
         possible_actions = list(Action)[1:-1]
         interesting_actions = [
-            a for a in possible_actions if observation[a.to_observation()] == -1
+            a for a in possible_actions if observation[a.to_observation(offset)] == -1
         ]
 
         if interesting_actions:

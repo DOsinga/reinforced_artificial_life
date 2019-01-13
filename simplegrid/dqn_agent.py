@@ -1,41 +1,43 @@
 import json
 import random
 import numpy as np
-import os
 
 from collections import deque
 
-from tensorflow.python.keras.models import Sequential
+from tensorflow.python.keras.models import Sequential, model_from_json
 from tensorflow.python.keras.layers import Dense
 from tensorflow.python.keras.optimizers import Adam
 
-import shared.constants as constants
-
 
 class DQNAgent:
-    def __init__(self, state_size, action_size):
-        self.state_size = state_size
-        self.action_size = action_size
+    def __init__(self, model):
+        """Create an agent using a model. Typically you want to call either from_stored_model or from_dimensions."""
         self.memory = deque(maxlen=5000)
         self.gamma = 0.95  # discount rate
+        # TODO: epsilon should be stored with the model?
         self.epsilon = 0.8  # exploration rate
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.5
         self.learning_rate = 0.001
-        self.model = self._build_model()
-        weight_file = constants.state_pattern.format(filename=constants.WEIGHTS_FILE)
-        if os.path.isfile(weight_file):
-            self.load_weights(weight_file)
+        model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
+        self.model = model
 
-    def _build_model(self):
+    @classmethod
+    def from_stored_model(cls, model_file):
+        model_json = open(model_file).read()
+        model = model_from_json(model_json)
+
+        return cls(model)
+
+    @classmethod
+    def from_dimensions(cls, state_size, action_size):
         """ Neural Net for Deep-Q learning Model--->>  #Q=NN.predict(state)"""
         model = Sequential()
-        model.add(Dense(24, input_dim=self.state_size, activation='relu'))
+        model.add(Dense(24, input_dim=state_size, activation='relu'))
         model.add(Dense(24, activation='relu'))
-        model.add(Dense(self.action_size, activation='linear'))
-        model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
+        model.add(Dense(action_size, activation='linear'))
 
-        return model
+        return cls(model)
 
     def remember(self, state, action, reward, next_state):
         """Store a memory
@@ -60,7 +62,8 @@ class DQNAgent:
 
         """
         if np.random.rand() <= self.epsilon:
-            return random.randrange(self.action_size)
+            output_size = self.model.output.shape[-1]
+            return random.randrange(output_size)
         act_values = self.predict(state)
         return np.argmax(act_values[0])
 
@@ -119,3 +122,8 @@ class DQNAgent:
                     'next_state': next_state,
                 }
                 fout.write(json.dumps(record) + '\n')
+
+    def save_model(self, name):
+        model_json = self.model.to_json(indent=2)
+        with open(name, 'w') as json_file:
+            json_file.write(model_json)

@@ -1,7 +1,13 @@
+import os
+
 from simplegrid.cow import SimpleCow, Action, MAX_ENERGY
 from simplegrid.dqn_agent import DQNAgent
-from shared.constants import VIEW_DISTANCE
+
 import numpy as np
+
+HISTORY_FILE = 'deep_cow_history.jsonl'
+WEIGHTS_FILE = 'deep_cow_model_weights.h5'
+MODEL_FILE = 'deep_cow_model.json'
 
 
 class DeepCow(SimpleCow):
@@ -46,7 +52,7 @@ class DeepCow(SimpleCow):
         self.prev_action_idx = self.action_idx
         self.state = self.to_internal_state(observation)
         if not DeepCow.agent:
-            DeepCow.agent = DQNAgent(len(self.state), action_size=4)
+            DeepCow.agent = DQNAgent.from_dimensions(len(self.state), action_size=4)
         self.action_idx = DeepCow.agent.act(self.state)
         return Action(self.action_idx + 1)
 
@@ -60,3 +66,18 @@ class DeepCow(SimpleCow):
     @classmethod
     def replay(cls):
         return DeepCow.agent.replay()
+
+    @classmethod
+    def restore_state(cls, settings):
+        model_file = settings.get_path(MODEL_FILE)
+        if model_file and os.path.isfile(model_file):
+            DeepCow.agent = DQNAgent.from_stored_model(model_file)
+            DeepCow.agent.load_weights(settings.get_path(WEIGHTS_FILE))
+
+    @classmethod
+    def save_state(cls, settings):
+        weights_file = settings.get_path(WEIGHTS_FILE)
+        if weights_file:
+            cls.agent.save_weights(weights_file)
+            cls.agent.save_history(settings.get_path(HISTORY_FILE))
+            cls.agent.save_model(settings.get_path(MODEL_FILE))
