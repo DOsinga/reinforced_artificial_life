@@ -1,12 +1,15 @@
 import json
 import random
 import numpy as np
+import os
 
 from collections import deque
 
 from tensorflow.python.keras.models import Sequential
 from tensorflow.python.keras.layers import Dense
 from tensorflow.python.keras.optimizers import Adam
+
+import shared.constants as constants
 
 
 class DQNAgent:
@@ -20,6 +23,9 @@ class DQNAgent:
         self.epsilon_decay = 0.5
         self.learning_rate = 0.001
         self.model = self._build_model()
+        weight_file = constants.state_pattern.format(filename=constants.WEIGHTS_FILE)
+        if os.path.isfile(weight_file):
+            self.load_weights(weight_file)
 
     def _build_model(self):
         """ Neural Net for Deep-Q learning Model--->>  #Q=NN.predict(state)"""
@@ -106,5 +112,10 @@ class DQNAgent:
                 state = [float(x) for x in state]
                 if next is not None:
                     next_state = [float(x) for x in next_state]
-                record = {'state': state, 'action': int(action), 'reward': float(reward), 'next_state': next_state}
+                record = {
+                    'state': state,
+                    'action': int(action),
+                    'reward': float(reward),
+                    'next_state': next_state,
+                }
                 fout.write(json.dumps(record) + '\n')

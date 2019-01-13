@@ -27,7 +27,9 @@ class Episode:
 
     def save(self, path):
         with open(path, 'w') as f:
-            f.writelines([json.dumps(frame, default=fallback_to_int) for frame in self.frames])
+            f.write(
+                '\n'.join([json.dumps(frame, default=fallback_to_int) for frame in self.frames])
+            )
 
 
 def fallback_to_int(o):

@@ -103,4 +103,4 @@ class GreedyCow(SimpleCow):
         if interesting_actions:
             return random.choice(interesting_actions)
         else:
-            return random.choice(possible_actions)
+            return Action.RIGHT  # Was: random.choice(possible_actions)
