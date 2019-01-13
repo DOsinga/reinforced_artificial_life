@@ -50,8 +50,6 @@ class DeepCow(SimpleCow):
         if not DeepCow.agent:
             DeepCow.agent = DQNAgent(len(self.state), action_size=4)
         self.action_idx = DeepCow.agent.act(self.state)
-        if self.state[self.action_idx]:
-            print(self.action_idx)
         return Action(self.action_idx + 1)
 
     def learn(self, reward, done):

@@ -103,8 +103,8 @@ class DQNAgent:
     def save_history(self, name):
         with open(name, 'w') as fout:
             for state, action, reward, next_state in self.memory:
-                state = [x for x in state]
+                state = [float(x) for x in state]
                 if next is not None:
-                    next_state = [x for x in next_state]
-                record = {'state': state, 'action': action, 'reward': reward, 'next_state': next_state}
+                    next_state = [float(x) for x in next_state]
+                record = {'state': state, 'action': int(action), 'reward': float(reward), 'next_state': next_state}
                 fout.write(json.dumps(record) + '\n')
