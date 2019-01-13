@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import argparse
-
+import itertools
 import pygame
 
 from shared.display import Display
@@ -24,12 +24,9 @@ def main(WorldClass):
 
     world = WorldClass(WORLD_SIZE, display)
 
-    episode_count = 0
-    while True:
-
+    for episode_count in itertools.count():
         # Play an episode
         episode = Episode()
-        episode_count += 1
         display.sidebar['episode'] = episode_count
 
         world.reset(episode)

@@ -122,7 +122,7 @@ class World:
             if len(self.counts) == 0:
                 print('draw')
             else:
-                print(list(self.counts.elements())[0], 'wins')
+                print(self.counts.most_common()[0][0], 'wins')
         return game_active
 
     def draw(self, display):
