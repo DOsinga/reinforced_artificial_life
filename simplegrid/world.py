@@ -14,6 +14,8 @@ class World:
         self.counts = {}
         display.offset_x = 0
         display.offset_y = 0
+        display.sidebar[os.path.basename(os.path.normpath(settings.path))] = ''
+
         self.creatures = {}
         self.settings = settings
         self.size = settings.world_size
@@ -21,16 +23,16 @@ class World:
         self.steps = 0
         DeepCow.restore_state(settings)
 
-    def reset(self, episode, grass_fraction=None):
-        if grass_fraction is None:
-            grass_fraction = self.settings.grass_fraction
+    def reset(self, episode, start_grass_fraction=None):
+        if start_grass_fraction is None:
+            start_grass_fraction = self.settings.start_grass_fraction
         self.counts = {}
         self.episode = episode
         self.creatures = {}
         self.cells.fill(0)
         self.steps = 0
         c = self.size * self.size
-        for i in np.random.choice(c, int(grass_fraction * c)):
+        for i in np.random.choice(c, int(start_grass_fraction * c)):
             self.set_cell(i // self.size, i % self.size, -1)
 
         for _ in range(self.settings.start_num_creatures):
@@ -100,7 +102,7 @@ class World:
             self.add_new_creature(creature)
 
         # Watching grass grow
-        for _ in range(3):
+        for _ in range(self.settings.grass_grow_per_turn):
             x = random.randrange(self.size)
             y = random.randrange(self.size)
             if self.cells[x, y] == 0:
@@ -128,7 +130,7 @@ class World:
                     grass_count += 1
                 elif idx > 0:
                     self.creatures[idx].draw(display)
-        display.sidebar['generation'] = self.steps
+        display.sidebar['steps'] = self.steps
         display.sidebar['grass'] = str(round(100 * grass_count / self.size / self.size)) + '%'
         for k, v in self.counts.items():
             display.sidebar[k + 's'] = v

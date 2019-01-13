@@ -21,6 +21,11 @@ class Action(IntEnum):
     LEFT = 4
     SPLIT = 5
 
+    @classmethod
+    def from_letter(cls, letter):
+        number = 'URDL'.find(letter) + 1
+        return cls(number)
+
     def __repr__(self):
         return self.name
 
