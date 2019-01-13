@@ -1,3 +1,4 @@
+import json
 import random
 import numpy as np
 
@@ -16,7 +17,7 @@ class DQNAgent:
         self.gamma = 0.95  # discount rate
         self.epsilon = 0.8  # exploration rate
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
+        self.epsilon_decay = 0.5
         self.learning_rate = 0.001
         self.model = self._build_model()
 
@@ -30,21 +31,35 @@ class DQNAgent:
 
         return model
 
-    def remember(self, state, action, reward, next_state, done):
-        self.memory.append((state, action, reward, next_state, done))
+    def remember(self, state, action, reward, next_state):
+        """Store a memory
 
-    # get action
+        Args:
+            state: the state at the beginning of the action
+            action: the chosen action based on this
+            reward: the reward for the action
+            next_state: the resulting state or None if the creature died.
+        """
+        self.memory.append((state, action, reward, next_state))
+
     def act(self, state):
-        """state is a 2-dimensional ndarray representing the surrounding squares
-        returns a random action with prob=epsilon else action=maxQ
+        """
+        Return an action given the state using the internal network.
+
+        Args:
+            state: flat array containing the state
+
+        Returns:
+            integer indicating the action
+
         """
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.action_size)
         act_values = self.predict(state)
-        return np.argmax(act_values[0])  # returns action
+        return np.argmax(act_values[0])
 
     def predict(self, state):
-        state = np.reshape(state, (1, -1))  # e.g. [[0,0,0, 0,2,0, -1,0,-0]]
+        state = np.reshape(state, (1, -1))
         return self.model.predict(state)
 
     def fit(self, state, target_f):
@@ -60,11 +75,10 @@ class DQNAgent:
 
         estimation_error_sum = 0
 
-        for state, action, reward, next_state, done in batch:
+        for state, action, reward, next_state in batch:
             target = reward
 
-            if not done:
-                # calculate target for each minibatch
+            if next_state is not None:
                 Q_next = self.predict(next_state)[0]
                 target = reward + self.gamma * np.amax(Q_next)  # Belman
 
@@ -76,13 +90,21 @@ class DQNAgent:
             # train network
             self.fit(state, target_f)
 
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
+        self.epsilon = min(self.epsilon_decay * self.epsilon, self.epsilon_min)
 
         return estimation_error_sum / len(batch)
 
-    def load(self, name):
+    def load_weights(self, name):
         self.model.load_weights(name)
 
-    def save(self, name):
+    def save_weights(self, name):
         self.model.save_weights(name)
+
+    def save_history(self, name):
+        with open(name, 'w') as fout:
+            for state, action, reward, next_state in self.memory:
+                state = [float(x) for x in state]
+                if next is not None:
+                    next_state = [float(x) for x in next_state]
+                record = {'state': state, 'action': int(action), 'reward': float(reward), 'next_state': next_state}
+                fout.write(json.dumps(record) + '\n')

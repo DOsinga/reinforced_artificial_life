@@ -1,9 +1,5 @@
 import json
 import numpy as np
-from pathlib import Path
-
-scriptpath = Path(__file__).resolve().parent
-last_episode_file = scriptpath / 'last_episode.jsonl'
 
 
 class Episode:
@@ -29,13 +25,13 @@ class Episode:
     def load(self):
         pass
 
-    def save(self):
-        with open(last_episode_file, 'w') as f:
+    def save(self, path):
+        with open(path, 'w') as f:
             f.writelines([json.dumps(frame, default=fallback_to_int) for frame in self.frames])
 
 
 def fallback_to_int(o):
-    ''' json.dumps cannot handle np.int64 data so this helper function is to convert it to int '''
+    """json.dumps cannot handle np.int64 data so this helper function is to convert it to int"""
     if isinstance(o, np.int64):
         return int(o)
     raise TypeError

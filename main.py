@@ -7,6 +7,7 @@ from shared.display import Display
 from ballworld.world import World as BallWorld
 from simplegrid.world import World as GridWorld
 from shared.episode import Episode
+from pathlib import Path
 
 WORLDS = {'ball': BallWorld, 'grid': GridWorld}
 
@@ -17,6 +18,9 @@ SCALE = 10
 
 
 def main(WorldClass):
+    script_path = Path(__file__).resolve().parent
+    state_pattern = script_path / 'state' / 'last_{filename}'
+
     display = Display(TITLE, WORLD_SIZE, SCALE)
     clock = pygame.time.Clock()
 
@@ -58,9 +62,8 @@ def main(WorldClass):
             clock.tick(FRAME_RATE)
             display.flip()
             pygame.display.set_caption(TITLE + ' ' + world.get_info())
-        world.end()
+        world.end(state_pattern)
 
-        episode.save()
 
 
 if __name__ == '__main__':
