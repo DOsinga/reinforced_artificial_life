@@ -61,7 +61,6 @@ def main(WorldClass, settings):
             pygame.display.set_caption(TITLE + ' ' + world.get_info())
         world.end()
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--world', type=str, choices=list(WORLDS), required=True)
