@@ -17,7 +17,8 @@ class DeepCow(SimpleCow):
         self.done = None
         self.action_idx = 0
 
-    def to_internal_state(self, observation):
+    @staticmethod
+    def to_internal_state(observation):
         """Convert state to an internal representation.
 
         The input state is a NxN matrix with for each cell either a 1 for food,
