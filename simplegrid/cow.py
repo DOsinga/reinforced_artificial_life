@@ -28,8 +28,8 @@ class Action(IntEnum):
     def to_direction(self):
         return {
             Action.UP: (0, -1),
-            Action.DOWN: (0, 1),
             Action.RIGHT: (1, 0),
+            Action.DOWN: (0, 1),
             Action.LEFT: (-1, 0),
         }[self]
 
@@ -64,7 +64,7 @@ class SimpleCow(object):
 
         return random.choice(list(Action)[1:-1])
 
-    def learn(self, state, reward, done):
+    def learn(self, reward, done):
         pass
 
     def draw(self, display):

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 from collections import Counter, defaultdict
 
 import numpy as np
@@ -45,7 +46,12 @@ class World:
             x, y = self.free_spot()
             self.add_new_creature(DeepCow(x, y, INIT_ENERGY, YELLOW))
 
-    def end(self):
+    def end(self, state_pattern):
+        state_pattern = str(state_pattern)
+        os.makedirs(os.path.dirname(state_pattern), exist_ok=True)
+        self.episode.save(state_pattern.format(filename='episode.jsonl'))
+        DeepCow.agent.save_history(state_pattern.format(filename='history.jsonl'))
+        DeepCow.agent.save_weights(state_pattern.format(filename='model_weights.h5'))
         print('stats', self.steps, DeepCow.replay())
 
     def set_cell(self, x, y, value):
@@ -63,8 +69,6 @@ class World:
         self.creatures[creature.id] = creature
         self.episode.creature_change(creature.id, creature.energy, type(creature).__name__)
         self.set_cell(creature.x, creature.y, creature.id)
-        _, state, reward, done, _ = self.process_action(creature, Action.NONE)
-        creature.learn(state, reward, done)
 
     def get_observation(self, creature):
         size_2 = self.size // 2
@@ -83,9 +87,10 @@ class World:
             if creature.id in dead:
                 continue
 
-            action = creature.step(self.get_observation(creature))
-            new_creature, state, reward, done, _ = self.process_action(creature, action)
-            creature.learn(state, reward, done)
+            observation = self.get_observation(creature)
+            action = creature.step(observation)
+            new_creature, reward, done = self.process_action(creature, action)
+            creature.learn(reward, done)
 
             if done:
                 dead.add(creature)
@@ -112,8 +117,6 @@ class World:
         self.counts = Counter(creature.__class__.__name__ for creature in self.creatures.values())
 
         game_active = len(self.counts) == 2
-        if not game_active:
-            self.episode.save()
         return game_active
 
     def draw(self, display):
@@ -175,8 +178,7 @@ class World:
             creature_type = type(creature).__name__
         self.episode.creature_change(creature.id, creature_energy, creature_type)
 
-        observation = self.get_observation(creature)
-        return new_creature, observation, reward, done, {}
+        return new_creature, reward, done
 
     def print(self):
         """Prints the current screen as ascii chars to the console. Convenient for debugging."""
