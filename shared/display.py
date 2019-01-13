@@ -49,7 +49,7 @@ class Display:
     def draw_text(self, x, y, text):
         rendered = self.font.render(text, True, pygame.Color("white"))
         self.screen.blit(rendered, (x + self.width, y))
- 
+
     def draw_sidebar(self):
         y = 10
         for key, val in self.sidebar.items():

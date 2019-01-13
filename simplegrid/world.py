@@ -5,6 +5,7 @@ from collections import Counter, defaultdict
 import numpy as np
 import random
 
+import shared.constants as constants
 from simplegrid.cow import SimpleCow, GreedyCow, Action, BLUE, RED, YELLOW
 from simplegrid.deep_cow import DeepCow
 from shared.constants import VIEW_DISTANCE
@@ -49,9 +50,9 @@ class World:
     def end(self, state_pattern):
         state_pattern = str(state_pattern)
         os.makedirs(os.path.dirname(state_pattern), exist_ok=True)
-        self.episode.save(state_pattern.format(filename='episode.jsonl'))
-        DeepCow.agent.save_history(state_pattern.format(filename='history.jsonl'))
-        DeepCow.agent.save_weights(state_pattern.format(filename='model_weights.h5'))
+        self.episode.save(state_pattern.format(filename=constants.EPISODE_FILE))
+        DeepCow.agent.save_history(state_pattern.format(filename=constants.HISTORY_FILE))
+        DeepCow.agent.save_weights(state_pattern.format(filename=constants.WEIGHTS_FILE))
         print('stats', self.steps, DeepCow.replay())
 
     def set_cell(self, x, y, value):
@@ -117,20 +118,29 @@ class World:
         self.counts = Counter(creature.__class__.__name__ for creature in self.creatures.values())
 
         game_active = len(self.counts) == 2
+        if not game_active:
+            if len(self.counts) == 0:
+                print('draw')
+            else:
+                print(list(self.counts.elements())[0], 'wins')
         return game_active
 
     def draw(self, display):
+        grass_count = 0
         for x in range(self.size):
             for y in range(self.size):
                 idx = self.cells[x, y]
                 if idx < 0:
                     color = (100, 240, 100)
                     display.rectangle(x, y, 1, color, padding=0.1)
+                    grass_count += 1
                 elif idx > 0:
                     self.creatures[idx].draw(display)
+        display.sidebar['generation'] = self.steps
+        display.sidebar['grass'] = str(round(100 * grass_count / self.size / self.size)) + '%'
         for k, v in self.counts.items():
-            display.sidebar[k] = v
-            display.sidebar[k + ' energy'] = self.energies[k]
+            display.sidebar[k + 's'] = v
+            display.sidebar[k + ' energy'] = int(self.energies[k])
 
     def get_info(self):
         return ' '.join(k + ': ' + str(v) for k, v in self.counts.items())
