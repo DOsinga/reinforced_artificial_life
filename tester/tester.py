@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 import sys
+import os
 import argparse
-import glob
 import numpy as np
 from simplegrid.cow import Action
 from simplegrid.dqn_agent import DQNAgent
 from simplegrid.deep_cow import DeepCow, MODEL_FILE, WEIGHTS_FILE
 from shared.experiment_settings import ExperimentSettings
+
+from simplegrid.cow import Action
+from simplegrid.dqn_agent import DQNAgent
+from simplegrid.deep_cow import DeepCow
 
 
 def load_scenario(scenario_file):
@@ -58,7 +62,6 @@ if __name__ == '__main__':
     settings = ExperimentSettings(args.experiment)
     print('Testing experiment', settings.path)
 
-    import os
 
     scenario_files = [file for file in os.listdir(settings.path) if file.endswith(".scenario.txt")]
     if not scenario_files:
@@ -67,3 +70,4 @@ if __name__ == '__main__':
 
     for scenario_file in scenario_files:
         run_scenario(settings.path, scenario_file)
+
