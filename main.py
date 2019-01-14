@@ -52,6 +52,8 @@ def main(WorldClass, settings):
                 display.scale *= 1.05
             elif keys_down[pygame.K_z]:
                 display.scale /= 1.05
+            elif keys_down[pygame.K_d]:
+                print(DeepCow.agent.identity_test())
             else:
                 if not world.step():
                     break
