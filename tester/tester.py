@@ -3,14 +3,11 @@ import sys
 import os
 import argparse
 import numpy as np
-from simplegrid.cow import Action
-from simplegrid.dqn_agent import DQNAgent
-from simplegrid.deep_cow import DeepCow, MODEL_FILE, WEIGHTS_FILE
+from simplegrid.cow import Action, GreedyCow, YELLOW, RED
+from simplegrid.deep_cow import DeepCow
 from shared.experiment_settings import ExperimentSettings
 
-from simplegrid.cow import Action
-from simplegrid.dqn_agent import DQNAgent
-from simplegrid.deep_cow import DeepCow
+VERBOSE = True
 
 
 def load_scenario(scenario_file):
@@ -19,33 +16,28 @@ def load_scenario(scenario_file):
     scenario_mapping = {char: idx - 1 for idx, char in enumerate('#.@')}
     observation = np.asarray(
         [[scenario_mapping[char] for char in list(line)] for line in map.split('\n')]
-    )
-    state = DeepCow.to_internal_state(observation)
-    return state, list(right_actions_string.rstrip())
+    ).T
+    return observation, list(right_actions_string.rstrip())
 
 
-def load_agent(path):
-    agent = DQNAgent.from_stored_model(os.path.join(path, MODEL_FILE))
-    weight_file = os.path.join(path, WEIGHTS_FILE)
-    agent.load_weights(weight_file)
-    return agent
-
-
-def run_scenario(path, scenario_file):
-    state, right_actions = load_scenario(os.path.join(settings.path, scenario_file))
-    print()
-    print('Scenario', scenario_file)
-    print(state)
+def run_scenario(path, scenario_file, creature, repetitions=1):
+    observation, right_actions = load_scenario(os.path.join(settings.path, scenario_file))
     right_actions = [Action.from_letter(ra) for ra in right_actions]
-    print('Right actions:', right_actions)
-
-    agent = load_agent(path)
-    action_idx = agent.act(state)
-    chosen_action = Action(action_idx + 1)
-    print('Chosen action:', chosen_action)
-    result = chosen_action in right_actions
-    print(result and 'Passed' or 'Failed')
-    return result
+    result = 0
+    for _ in range(repetitions):
+        chosen_action = creature.step(observation)
+        result += chosen_action in right_actions
+    result_string = f'{100*result/repetitions:.0f}% passed'
+    if VERBOSE:
+        print()
+        print('Scenario', scenario_file)
+        print(observation.T)
+        print('Right actions:', right_actions)
+        print(result_string)
+        print()
+    else:
+        print(scenario_file[:-13], result_string)
+    return result / repetitions
 
 
 if __name__ == '__main__':
@@ -62,12 +54,17 @@ if __name__ == '__main__':
     settings = ExperimentSettings(args.experiment)
     print('Testing experiment', settings.path)
 
-
     scenario_files = [file for file in os.listdir(settings.path) if file.endswith(".scenario.txt")]
     if not scenario_files:
         print('No scenarios found in', settings.path)
         sys.exit()
 
-    for scenario_file in scenario_files:
-        run_scenario(settings.path, scenario_file)
+    creature = DeepCow(0, 0, 100, YELLOW)
+    # creature = GreedyCow(0,0,100,RED)
 
+    right = 0
+    for scenario_file in scenario_files:
+        right += run_scenario(settings.path, scenario_file, creature, 1000)
+
+    percentage = 100 * right / len(scenario_files)
+    print(f'{right:.0f}/{len(scenario_files)} passed ({percentage:.0f}%)')
