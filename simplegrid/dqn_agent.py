@@ -79,6 +79,8 @@ class DQNAgent:
         """Replay memories so older stuff doesn't get overwritten what we've learned.
         Also allows us to reinterpret experiences. Maybe dreaming works like this?
         """
+        print(self.identity_test())
+
         batch = [*self.memory]
         random.shuffle(batch)
 
@@ -89,7 +91,7 @@ class DQNAgent:
 
             if next_state is not None:
                 Q_next = self.predict(next_state)[0]
-                target = reward + self.gamma * np.amax(Q_next)  # Belman
+                target = reward + self.gamma * np.amax(Q_next)  # Bellman
 
             target_f = self.predict(state)
 
@@ -100,14 +102,25 @@ class DQNAgent:
             self.fit(state, target_f)
 
         self.epsilon = min(self.epsilon_decay * self.epsilon, self.epsilon_min)
+        print(self.identity_test())
 
         return estimation_error_sum / len(batch)
 
+    def identity_test(self):
+        """Run the network over inputs with each exactly one cell set to one."""
+        input_size = int(self.model.input.shape[-1])
+        inputs = np.zeros((input_size, input_size))
+        for i in range(input_size):
+            inputs[i][i] = 1.0
+        return self.model.predict(inputs)
+
     def load_weights(self, name):
         self.model.load_weights(name)
+        print(self.identity_test())
 
     def save_weights(self, name):
         self.model.save_weights(name)
+        print(self.identity_test())
 
     def save_history(self, name):
         with open(name, 'w') as fout:
