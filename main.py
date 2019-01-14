@@ -7,6 +7,7 @@ import pygame
 from shared.display import Display
 from ballworld.world import World as BallWorld
 from shared.experiment_settings import ExperimentSettings
+from simplegrid.deep_cow import DeepCow
 from simplegrid.world import World as GridWorld
 from shared.episode import Episode
 
