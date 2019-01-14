@@ -10,12 +10,11 @@ from tensorflow.python.keras.optimizers import Adam
 
 
 class DQNAgent:
-    def __init__(self, model):
+    def __init__(self, model, epsilon):
         """Create an agent using a model. Typically you want to call either from_stored_model or from_dimensions."""
         self.memory = deque(maxlen=5000)
         self.gamma = 0.95  # discount rate
-        # TODO: epsilon should be stored with the model?
-        self.epsilon = 0.8  # exploration rate
+        self.epsilon = epsilon
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.5
         self.learning_rate = 0.001
@@ -24,10 +23,12 @@ class DQNAgent:
 
     @classmethod
     def from_stored_model(cls, model_file):
-        model_json = open(model_file).read()
-        model = model_from_json(model_json)
+        model_and_settings = json.load(open(model_file))
+        epsilon = model_and_settings['epsilon']
+        model_json = model_and_settings['model']
+        model = model_from_json(json.dumps(model_json))
 
-        return cls(model)
+        return cls(model, epsilon)
 
     @classmethod
     def from_dimensions(cls, state_size, action_size):
@@ -37,7 +38,7 @@ class DQNAgent:
         model.add(Dense(24, activation='relu'))
         model.add(Dense(action_size, activation='linear'))
 
-        return cls(model)
+        return cls(model, epsilon=0.8)
 
     def remember(self, state, action, reward, next_state):
         """Store a memory
@@ -137,6 +138,6 @@ class DQNAgent:
                 fout.write(json.dumps(record) + '\n')
 
     def save_model(self, name):
-        model_json = self.model.to_json(indent=2)
+        model_json = json.loads(self.model.to_json(indent=2))
         with open(name, 'w') as json_file:
-            json_file.write(model_json)
+            json.dump({'model': model_json, 'epsilon': self.epsilon}, json_file)
