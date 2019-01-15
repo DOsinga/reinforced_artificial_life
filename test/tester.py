@@ -81,9 +81,9 @@ if __name__ == '__main__':
     creature = DeepCow(0, 0, 0, 0)
     # creature = GreedyCow(0, 0, 0, 0)
 
-    right = 0
+    correct = 0
     for scenario_file in sorted(scenario_files):
-        right += run_scenario(scenario_file, creature, args.verbose, 1000)
+        correct += run_scenario(scenario_file, creature, args.verbose, 1000)
 
-    percentage = 100 * right / len(scenario_files)
-    print(f'{right:.0f}/{len(scenario_files)} passed ({percentage:.0f}%)')
+    percentage = 100 * correct / len(scenario_files)
+    print(f'{correct:.0f}/{len(scenario_files)} passed ({percentage:.0f}%)')
