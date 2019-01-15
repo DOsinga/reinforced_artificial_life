@@ -7,6 +7,7 @@ import pygame
 from shared.display import Display
 from ballworld.world import World as BallWorld
 from shared.experiment_settings import ExperimentSettings
+from simplegrid.deep_cow import DeepCow
 from simplegrid.world import World as GridWorld
 from shared.episode import Episode
 
@@ -51,6 +52,8 @@ def main(WorldClass, settings):
                 display.scale *= 1.05
             elif keys_down[pygame.K_z]:
                 display.scale /= 1.05
+            elif keys_down[pygame.K_d]:
+                print(DeepCow.agent.identity_test())
             else:
                 if not world.step():
                     break

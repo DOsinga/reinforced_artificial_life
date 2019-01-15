@@ -63,10 +63,7 @@ class DeepCow(SimpleCow):
             DeepCow.agent.remember(
                 self.prev_state, self.prev_action_idx, self.prev_reward, self.state
             )
-
-    @classmethod
-    def replay(cls):
-        return DeepCow.agent.replay()
+            DeepCow.agent.replay()
 
     @classmethod
     def restore_state(cls, settings):

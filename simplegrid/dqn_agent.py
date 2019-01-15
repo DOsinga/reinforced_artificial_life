@@ -10,24 +10,28 @@ from tensorflow.python.keras.optimizers import Adam
 
 
 class DQNAgent:
-    def __init__(self, model):
+    def __init__(self, model, epsilon):
         """Create an agent using a model. Typically you want to call either from_stored_model or from_dimensions."""
         self.memory = deque(maxlen=5000)
         self.gamma = 0.95  # discount rate
-        # TODO: epsilon should be stored with the model?
-        self.epsilon = 0.8  # exploration rate
+        self.epsilon = epsilon
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.5
+        self.epsilon_decay = 0.995
         self.learning_rate = 0.001
+        self.batch_size = 32
         model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
         self.model = model
+        self.input_size = int(self.model.input.shape[-1])
+        self.output_size = self.model.output.shape[-1]
 
     @classmethod
     def from_stored_model(cls, model_file):
-        model_json = open(model_file).read()
-        model = model_from_json(model_json)
+        model_and_settings = json.load(open(model_file))
+        epsilon = model_and_settings['epsilon']
+        model_json = model_and_settings['model']
+        model = model_from_json(json.dumps(model_json))
 
-        return cls(model)
+        return cls(model, epsilon)
 
     @classmethod
     def from_dimensions(cls, state_size, action_size):
@@ -37,7 +41,7 @@ class DQNAgent:
         model.add(Dense(24, activation='relu'))
         model.add(Dense(action_size, activation='linear'))
 
-        return cls(model)
+        return cls(model, epsilon=0.8)
 
     def remember(self, state, action, reward, next_state):
         """Store a memory
@@ -62,8 +66,7 @@ class DQNAgent:
 
         """
         if np.random.rand() <= self.epsilon:
-            output_size = self.model.output.shape[-1]
-            return random.randrange(output_size)
+            return random.randrange(self.output_size)
         act_values = self.predict(state)
         return np.argmax(act_values[0])
 
@@ -76,32 +79,40 @@ class DQNAgent:
         self.model.fit(state, target_f, epochs=1, verbose=0)
 
     def replay(self):
-        """Replay memories so older stuff doesn't get overwritten what we've learned.
-        Also allows us to reinterpret experiences. Maybe dreaming works like this?
-        """
-        batch = [*self.memory]
-        random.shuffle(batch)
+        # Sample a batch from memory uniformly at random
+        batch_size = min(self.batch_size, len(self.memory))
+        batch = random.sample(self.memory, batch_size)
 
-        estimation_error_sum = 0
+        # Predict q_values in batches for efficiency
+        none_state = np.zeros(self.input_size)  # Used in place of None for next_state
+        states = np.array([sample[0] for sample in batch])
+        next_states = np.array([(none_state if sample[3] is None else sample[3]) for sample in batch])
+        q_values = self.model.predict(states)
+        q_values_next = self.model.predict(next_states)
 
-        for state, action, reward, next_state in batch:
-            target = reward
+        # Fill in our training batch
+        X = np.zeros((batch_size, self.input_size))
+        y = np.zeros((batch_size, self.output_size))
+        for i in range(batch_size):
+            state, action, reward, next_state = batch[i]
+            # Important : target is the q_value itself for all actions except the one actually taken
+            target = q_values[i]
+            if next_state is None:
+                target[action] = reward
+            else:
+                target[action] = reward + self.gamma * np.amax(q_values_next[i])
+            X[i] = state
+            y[i] = target
 
-            if next_state is not None:
-                Q_next = self.predict(next_state)[0]
-                target = reward + self.gamma * np.amax(Q_next)  # Belman
-
-            target_f = self.predict(state)
-
-            estimation_error_sum += abs(target_f[0][action] - target)
-            target_f[0][action] = target
-
-            # train network
-            self.fit(state, target_f)
-
+        self.model.fit(X, y, verbose=0)
         self.epsilon = min(self.epsilon_decay * self.epsilon, self.epsilon_min)
 
-        return estimation_error_sum / len(batch)
+    def identity_test(self):
+        """Run the network over inputs with each exactly one cell set to one."""
+        inputs = np.zeros((self.input_size, self.input_size))
+        for i in range(self.input_size):
+            inputs[i][i] = 1.0
+        return self.model.predict(inputs)
 
     def load_weights(self, name):
         self.model.load_weights(name)
@@ -124,6 +135,6 @@ class DQNAgent:
                 fout.write(json.dumps(record) + '\n')
 
     def save_model(self, name):
-        model_json = self.model.to_json(indent=2)
+        model_json = json.loads(self.model.to_json(indent=2))
         with open(name, 'w') as json_file:
-            json_file.write(model_json)
+            json.dump({'model': model_json, 'epsilon': self.epsilon}, json_file)

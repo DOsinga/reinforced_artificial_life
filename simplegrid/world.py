@@ -41,10 +41,13 @@ class World:
             x, y = self.free_spot()
             self.add_new_creature(DeepCow(x, y, self.settings.init_energy, YELLOW))
 
+        if DeepCow.agent:
+            print('generation start:')
+            print(DeepCow.agent.identity_test())
+
     def end(self):
         self.episode.save(self.settings)
         DeepCow.save_state(self.settings)
-        print('stats', self.steps, DeepCow.replay())
 
     def set_cell(self, x, y, value):
         self.cells[x, y] = value
@@ -147,7 +150,7 @@ class World:
 
     def process_action(self, creature, action):
         new_creature = None
-        reward = 0
+        reward = - self.settings.move_cost / self.settings.grass_energy
         if action == Action.NONE:
             creature.energy -= self.settings.idle_cost
         elif action == Action.SPLIT:
@@ -158,14 +161,13 @@ class World:
                 x, y = self.apply_direction(option, creature.x, creature.y)
                 if self.cells[x, y] == 0:
                     new_creature = creature.split()
-                    reward = 10
                     break
         else:
             self.set_cell(creature.x, creature.y, 0)
             x, y = self.apply_direction(action, creature.x, creature.y)
             if self.cells[x, y] <= 0:
                 if self.cells[x, y] == -1:
-                    reward = 1
+                    reward += 1
                     creature.energy += self.settings.grass_energy
                 creature.x = x
                 creature.y = y
