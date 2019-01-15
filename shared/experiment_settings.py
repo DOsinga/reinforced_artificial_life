@@ -13,7 +13,7 @@ SETTINGS_FILE = 'settings.yaml'
 
 class ExperimentSettings:
     def __init__(self, path):
-        self.path = os.path.abspath(path)
+        self.path = path
         root_path = Path(__file__).resolve().parent.parent / SETTINGS_FILE
         if path:
             settings_file = Path(path) / SETTINGS_FILE

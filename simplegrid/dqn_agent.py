@@ -16,10 +16,13 @@ class DQNAgent:
         self.gamma = 0.95  # discount rate
         self.epsilon = epsilon
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.5
+        self.epsilon_decay = 0.995
         self.learning_rate = 0.001
+        self.batch_size = 32
         model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
         self.model = model
+        self.input_size = int(self.model.input.shape[-1])
+        self.output_size = self.model.output.shape[-1]
 
     @classmethod
     def from_stored_model(cls, model_file):
@@ -63,8 +66,7 @@ class DQNAgent:
 
         """
         if np.random.rand() <= self.epsilon:
-            output_size = self.model.output.shape[-1]
-            return random.randrange(output_size)
+            return random.randrange(self.output_size)
         act_values = self.predict(state)
         return np.argmax(act_values[0])
 
@@ -77,41 +79,38 @@ class DQNAgent:
         self.model.fit(state, target_f, epochs=1, verbose=0)
 
     def replay(self):
-        """Replay memories so older stuff doesn't get overwritten what we've learned.
-        Also allows us to reinterpret experiences. Maybe dreaming works like this?
-        """
-        print(self.identity_test())
+        # Sample a batch from memory uniformly at random
+        batch_size = min(self.batch_size, len(self.memory))
+        batch = random.sample(self.memory, batch_size)
 
-        batch = [*self.memory]
-        random.shuffle(batch)
+        # Predict q_values in batches for efficiency
+        none_state = np.zeros(self.input_size)  # Used in place of None for next_state
+        states = np.array([sample[0] for sample in batch])
+        next_states = np.array([(none_state if sample[3] is None else sample[3]) for sample in batch])
+        q_values = self.model.predict(states)
+        q_values_next = self.model.predict(next_states)
 
-        estimation_error_sum = 0
+        # Fill in our training batch
+        X = np.zeros((batch_size, self.input_size))
+        y = np.zeros((batch_size, self.output_size))
+        for i in range(batch_size):
+            state, action, reward, next_state = batch[i]
+            # Important : target is the q_value itself for all actions except the one actually taken
+            target = q_values[i]
+            if next_state is None:
+                target[action] = reward
+            else:
+                target[action] = reward + self.gamma * np.amax(q_values_next[i])
+            X[i] = state
+            y[i] = target
 
-        for state, action, reward, next_state in batch:
-            target = reward
-
-            if next_state is not None:
-                Q_next = self.predict(next_state)[0]
-                target = reward + self.gamma * np.amax(Q_next)  # Bellman
-
-            target_f = self.predict(state)
-
-            estimation_error_sum += abs(target_f[0][action] - target)
-            target_f[0][action] = target
-
-            # train network
-            self.fit(state, target_f)
-
+        self.model.fit(X, y, verbose=0)
         self.epsilon = min(self.epsilon_decay * self.epsilon, self.epsilon_min)
-        print(self.identity_test())
-
-        return estimation_error_sum / len(batch)
 
     def identity_test(self):
         """Run the network over inputs with each exactly one cell set to one."""
-        input_size = int(self.model.input.shape[-1])
-        inputs = np.zeros((input_size, input_size))
-        for i in range(input_size):
+        inputs = np.zeros((self.input_size, self.input_size))
+        for i in range(self.input_size):
             inputs[i][i] = 1.0
         return self.model.predict(inputs)
 
