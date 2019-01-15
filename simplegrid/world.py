@@ -150,7 +150,7 @@ class World:
 
     def process_action(self, creature, action):
         new_creature = None
-        reward = - self.settings.move_cost / self.settings.grass_energy
+        reward = -self.settings.move_cost / self.settings.grass_energy
         if action == Action.NONE:
             creature.energy -= self.settings.idle_cost
         elif action == Action.SPLIT:

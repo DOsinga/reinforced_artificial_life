@@ -7,7 +7,6 @@ import yaml
 VIEW_DISTANCE = 1
 
 EPISODE_FILE = 'episode.jsonl'
-
 SETTINGS_FILE = 'settings.yaml'
 
 

@@ -5,24 +5,21 @@ import itertools
 import pygame
 
 from shared.display import Display
-from ballworld.world import World as BallWorld
 from shared.experiment_settings import ExperimentSettings
 from simplegrid.deep_cow import DeepCow
-from simplegrid.world import World as GridWorld
+from simplegrid.world import World as World
 from shared.episode import Episode
-
-WORLDS = {'ball': BallWorld, 'grid': GridWorld}
 
 FRAME_RATE = 60
 TITLE = 'Reinforced Artificial Life'
 
 
-def main(WorldClass, settings):
+def main(settings):
 
     display = Display(TITLE, settings.world_size, settings.scale)
     clock = pygame.time.Clock()
 
-    world = WorldClass(settings, display)
+    world = World(settings, display)
 
     for episode_count in itertools.count():
         # Play an episode
@@ -67,7 +64,6 @@ def main(WorldClass, settings):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--world', type=str, choices=list(WORLDS), required=True)
     parser.add_argument(
         '--experiment',
         type=str,
@@ -80,6 +76,6 @@ if __name__ == '__main__':
     settings = ExperimentSettings(args.experiment)
     pygame.init()
     try:
-        main(WORLDS[args.world], settings)
+        main(settings)
     finally:
         pygame.quit()
