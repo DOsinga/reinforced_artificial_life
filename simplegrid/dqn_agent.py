@@ -116,11 +116,9 @@ class DQNAgent:
 
     def load_weights(self, name):
         self.model.load_weights(name)
-        print(self.identity_test())
 
     def save_weights(self, name):
         self.model.save_weights(name)
-        print(self.identity_test())
 
     def save_history(self, name):
         with open(name, 'w') as fout:
