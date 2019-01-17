@@ -11,6 +11,7 @@ from shared.experiment_settings import ExperimentSettings
 
 TESTS_DIR = 'tests'
 SCENARIO_MAPPING = {char: idx - 1 for idx, char in enumerate('#.@')}
+CREATURES = {'greedy': GreedyCow, 'deep': DeepCow}
 
 
 def load_scenario(scenario_file):
@@ -45,15 +46,29 @@ def run_scenario(scenario, creature, verbose, repetitions=1):
     return result / repetitions
 
 
-if __name__ == '__main__':
+def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--experiment',
         type=str,
         required=True,
-        help='Optional argument specifying the experiment to run. This should be a directory '
+        help='Required argument specifying the experiment to run. This should be a directory '
         'where the specific settings and various state files are stored. Directoy will '
         'be created and initialized if it does not exist.',
+    )
+    parser.add_argument(
+        '--creature',
+        type=str,
+        choices=list(CREATURES),
+        required=True,
+        help='Required argument that specifies wich creature will be tested. Options are greedy or deep.',
+    )
+    parser.add_argument(
+        '--test',
+        type=str,
+        required=False,
+        help='Optional argument specifying the test to run. This should be an existing '
+        'file name in the tests diretory without the path.',
     )
     parser.add_argument(
         '--verbose', dest='verbose', action='store_true', help='Pass verbose to see full output.'
@@ -64,26 +79,33 @@ if __name__ == '__main__':
         action='store_false',
         help='Pass terse to see output of only one line per test (this is the default).',
     )
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+if __name__ == '__main__':
+    args = parse_arguments()
 
     settings = ExperimentSettings(args.experiment)
     print('Testing experiment', settings.path)
     settings.path = os.path.join('..', settings.path)
 
-    scenario_files = [
-        os.path.join(TESTS_DIR, scenario_file) for scenario_file in os.listdir(TESTS_DIR)
-    ]
-    if not scenario_files:
-        print('No scenarios found in', settings.path)
-        sys.exit()
+    if args.test:
+        scenario_files = [args.test]
+    else:
+        scenario_files = os.listdir(TESTS_DIR)
+        if not scenario_files:
+            print('No scenarios found in', settings.path)
+            sys.exit()
+    scenario_files = [os.path.join(TESTS_DIR, scenario_file) for scenario_file in scenario_files]
 
     DeepCow.restore_state(settings)
-    creature = DeepCow(0, 0, 0, 0)
-    # creature = GreedyCow(0, 0, 0, 0)
+    CreatureClass = CREATURES[args.creature]
+    creature = CreatureClass(0, 0, 0, 0)
 
     correct = 0
     for scenario_file in sorted(scenario_files):
         correct += run_scenario(scenario_file, creature, args.verbose, 1000)
 
-    percentage = 100 * correct / len(scenario_files)
-    print(f'{correct:.0f}/{len(scenario_files)} passed ({percentage:.0f}%)')
+    if len(scenario_files) > 1:
+        percentage = 100 * correct / len(scenario_files)
+        print(f'{correct:.0f}/{len(scenario_files)} passed ({percentage:.0f}%)')
