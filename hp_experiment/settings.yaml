@@ -10,5 +10,5 @@ start_grass_fraction: 0.1
 grass_grow_per_turn: .9
 world_size: 40
 scale: 10
-view_distance: 2
+view_distance: 1
 steps_per_episode: 1600
