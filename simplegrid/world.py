@@ -2,7 +2,7 @@
 import os
 import random
 from collections import Counter, defaultdict, deque
-
+import itertools
 import numpy as np
 
 from simplegrid.cow import GreedyCow, Action, RED, YELLOW
@@ -43,8 +43,16 @@ class World:
             self.add_new_creature(DeepCow(x, y, self.settings.init_energy, YELLOW))
 
         if DeepCow.agent:
-            print('generation start:')
+            np.set_printoptions(precision=2, suppress=True)
+            print('\nIdentity test at generation start:')
             print(DeepCow.agent.identity_test())
+            if self.settings.show_weights:
+                for idx, layer in enumerate(DeepCow.agent.model.layers):
+                    print(f'\nLayer {idx} weights (rows are inputs, columns are outputs:')
+                    print(layer.get_weights()[0])
+                    print(f'Layer {idx} biases:')
+                    print(layer.get_weights()[1])
+                print()
 
     def end(self):
         self.episode.save(self.settings)
