@@ -6,9 +6,9 @@ move_cost: 2
 batch_size: 32
 
 start_num_creatures: 6
-start_grass_fraction: 0.1
-grass_grow_per_turn: .9
-world_size: 40
+start_grass_fraction: 0.3
+grass_grow_per_turn: 3
+world_size: 60
 scale: 10
 view_distance: 1
 steps_per_episode: 1600

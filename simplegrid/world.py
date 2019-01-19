@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 import random
-from collections import Counter, defaultdict
+from collections import Counter, defaultdict, deque
 
 import numpy as np
 
@@ -21,6 +21,7 @@ class World:
         self.size = settings.world_size
         self.cells = np.zeros((self.size, self.size))
         self.steps = 0
+        self.winstreak = deque(maxlen=9)
         DeepCow.restore_state(settings)
 
     def reset(self, episode, start_grass_fraction=None):
@@ -77,7 +78,7 @@ class World:
     def step(self):
         self.steps += 1
         if self.steps == self.settings.steps_per_episode:
-            return False
+            return self.end_of_episode()
         dead = set()
         born = []
         self.energies = defaultdict(int)
@@ -105,7 +106,11 @@ class World:
             self.add_new_creature(creature)
 
         # Watching grass grow
-        for _ in range(self.settings.grass_grow_per_turn):
+        turns, rest = divmod(self.settings.grass_grow_per_turn, 1)
+        a = random.random()
+        if a < rest:  # To make it possible to grow a fraction per turn
+            turns += 1
+        for _ in range(int(turns)):
             x = random.randrange(self.size)
             y = random.randrange(self.size)
             if self.cells[x, y] == 0:
@@ -114,13 +119,19 @@ class World:
         self.episode.next_frame()
         self.counts = Counter(creature.__class__.__name__ for creature in self.creatures.values())
 
-        game_active = len(self.counts) == 2
-        if not game_active:
-            if len(self.counts) == 0:
-                print('draw')
-            else:
-                print(list(self.counts.elements())[0], 'wins')
-        return game_active
+        if not len(self.counts) == 2:
+            return self.end_of_episode()
+        return True
+
+    def end_of_episode(self):
+        if len(self.counts) == 0:
+            print('draw')
+            winner = '-'
+        else:
+            winner = list(self.counts.elements())[0]
+            print(winner, 'wins')
+        self.winstreak.append(winner[0])
+        return False
 
     def draw(self, display):
         grass_count = 0
@@ -133,6 +144,7 @@ class World:
                     grass_count += 1
                 elif idx > 0:
                     self.creatures[idx].draw(display)
+        display.sidebar['Winner streak'] = ''.join(self.winstreak)
         display.sidebar['steps'] = self.steps
         display.sidebar['grass'] = str(round(100 * grass_count / self.size / self.size)) + '%'
         for k, v in self.counts.items():
@@ -150,7 +162,7 @@ class World:
 
     def process_action(self, creature, action):
         new_creature = None
-        reward = - self.settings.move_cost / self.settings.grass_energy
+        reward = -self.settings.move_cost / self.settings.grass_energy
         if action == Action.NONE:
             creature.energy -= self.settings.idle_cost
         elif action == Action.SPLIT:

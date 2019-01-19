@@ -1,12 +1,15 @@
 import json
 import random
 import numpy as np
-
+import os
 from collections import deque
 
 from tensorflow.python.keras.models import Sequential, model_from_json
 from tensorflow.python.keras.layers import Dense
 from tensorflow.python.keras.optimizers import Adam
+
+# Just disables the warning, doesn't enable AVX/FMA
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
 class DQNAgent:
@@ -86,7 +89,9 @@ class DQNAgent:
         # Predict q_values in batches for efficiency
         none_state = np.zeros(self.input_size)  # Used in place of None for next_state
         states = np.array([sample[0] for sample in batch])
-        next_states = np.array([(none_state if sample[3] is None else sample[3]) for sample in batch])
+        next_states = np.array(
+            [(none_state if sample[3] is None else sample[3]) for sample in batch]
+        )
         q_values = self.model.predict(states)
         q_values_next = self.model.predict(next_states)
 
@@ -109,9 +114,8 @@ class DQNAgent:
 
     def identity_test(self):
         """Run the network over inputs with each exactly one cell set to one."""
-        inputs = np.zeros((self.input_size, self.input_size))
-        for i in range(self.input_size):
-            inputs[i][i] = 1.0
+        inputs = np.identity(self.input_size)
+        inputs = np.vstack((inputs, np.array([[0, 0, 0, 0]])))
         return self.model.predict(inputs)
 
     def load_weights(self, name):

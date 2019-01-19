@@ -54,5 +54,5 @@ class Display:
         y = 10
         for key, val in self.sidebar.items():
             self.draw_text(10, y, key)
-            self.draw_text(140, y, str(val))
+            self.draw_text(130, y, str(val))
             y += 30
