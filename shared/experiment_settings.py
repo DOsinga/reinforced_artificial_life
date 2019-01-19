@@ -11,7 +11,7 @@ SETTINGS_FILE = 'settings.yaml'
 
 
 class ExperimentSettings:
-    def __init__(self, path):
+    def __init__(self, path, show_weights=False):
         self.path = path
         root_path = Path(__file__).resolve().parent.parent / SETTINGS_FILE
         if path:
@@ -23,6 +23,7 @@ class ExperimentSettings:
             settings_file = root_path
         with open(settings_file) as fin:
             self.settings = yaml.load(fin)
+        self.show_weights = show_weights
 
     def __getattr__(self, item):
         if item in self.settings:

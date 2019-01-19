@@ -4,12 +4,11 @@ import os
 import argparse
 import numpy as np
 
-sys.path.append('..')
 from simplegrid.cow import Action, GreedyCow
 from simplegrid.deep_cow import DeepCow
 from shared.experiment_settings import ExperimentSettings
 
-TESTS_DIR = 'tests'
+TESTS_DIR = 'test/tests'
 SCENARIO_MAPPING = {char: idx - 1 for idx, char in enumerate('#.@')}
 CREATURES = {'greedy': GreedyCow, 'deep': DeepCow}
 
