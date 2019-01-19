@@ -14,7 +14,8 @@ class World:
         self.counts = {}
         display.offset_x = 0
         display.offset_y = 0
-        display.sidebar[os.path.basename(os.path.normpath(settings.path))] = ''
+        if settings.path:
+            display.sidebar[os.path.basename(os.path.normpath(settings.path))] = ''
 
         self.creatures = {}
         self.settings = settings
