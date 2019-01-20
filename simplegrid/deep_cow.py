@@ -27,20 +27,35 @@ class DeepCow(SimpleCow):
     def to_internal_state(observation):
         """Convert state to an internal representation.
 
-        The input state is a NxN matrix with for each cell either a 1 for food,
-        0 for nothing or -x for another animal. The center cell is always "us"
+        The input state is a (2 x d + 1, 2 x d + 1) matrix with for each
+        cell either a 1 for food, 0 for nothing or -x for another animal.
+        The center cell is always "us". Only the largest diamond fitting
+        the matrix is actually visible.
         """
+        size = observation.shape[0]
 
-        grass = np.copy(observation).flatten()
+        view_distance = size // 2
+        if view_distance == 1:
+            diamond = observation.flatten()
+            diamond = [diamond[3], diamond[7], diamond[5], diamond[1]]
+        else:
+            diamond = []
+            for x in range(size):
+                for y in range(size):
+                    if 0 < abs(x - size // 2) + abs(y - size // 2) <= view_distance:
+                        diamond.append(observation[x][y])
+        diamond = np.asarray(diamond)
+
+        grass = np.copy(diamond).flatten()
         grass[grass > 0] = 0
         grass[grass < 0] = 1
-        cows = np.copy(observation).flatten()
+        cows = np.copy(diamond).flatten()
         cows[cows < 0] = 0
         cows[cows > 0] = 1
 
-        # Temporarily return a much simpler state, just the directions:
-        # (up, right, down, left):
-        return np.asarray([grass[3], grass[7], grass[5], grass[1]])
+        res = grass
+
+        return res
 
         # return np.concatenate((grass, cows))
 
