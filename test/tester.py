@@ -38,7 +38,6 @@ def run_scenario(scenario, creature, world, verbose, repetitions=1):
     creature.x = FAKE_WORLD_SIZE // 2
     creature.y = FAKE_WORLD_SIZE // 2
     world.add_new_creature(creature)
-    environment = world.get_observation(creature)
     observation = world.get_observation(creature)
 
     result = 0
