@@ -4,12 +4,11 @@ import os
 import argparse
 import numpy as np
 
-sys.path.append('..')
 from simplegrid.cow import Action, GreedyCow
 from simplegrid.deep_cow import DeepCow
 from shared.experiment_settings import ExperimentSettings
 
-TESTS_DIR = 'tests'
+TESTS_DIR = os.path.join(os.path.dirname(__file__), 'tests')
 SCENARIO_MAPPING = {char: idx - 1 for idx, char in enumerate('#.@')}
 CREATURES = {'greedy': GreedyCow, 'deep': DeepCow}
 
@@ -87,7 +86,6 @@ if __name__ == '__main__':
 
     settings = ExperimentSettings(args.experiment)
     print('Testing experiment', settings.path)
-    settings.path = os.path.join('..', settings.path)
 
     if args.test:
         scenario_files = [args.test]
@@ -99,6 +97,7 @@ if __name__ == '__main__':
     scenario_files = [os.path.join(TESTS_DIR, scenario_file) for scenario_file in scenario_files]
 
     DeepCow.restore_state(settings)
+    DeepCow.agent.epsilon = 0.0
     CreatureClass = CREATURES[args.creature]
     creature = CreatureClass(0, 0, 0, 0)
 
