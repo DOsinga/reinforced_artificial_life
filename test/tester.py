@@ -6,13 +6,12 @@ from unittest.mock import MagicMock
 
 import numpy as np
 
-from simplegrid.cow import Action, GreedyCow
+from simplegrid.cow import Action, GreedyCow, text_scene_to_environment
 from simplegrid.deep_cow import DeepCow
 from shared.experiment_settings import ExperimentSettings
 from simplegrid.world import World
 
 TESTS_DIR = os.path.join(os.path.dirname(__file__), 'tests')
-SCENARIO_MAPPING = {char: idx - 1 for idx, char in enumerate('#.@')}
 CREATURES = {'greedy': GreedyCow, 'deep': DeepCow}
 
 FAKE_WORLD_SIZE = 15
@@ -20,12 +19,10 @@ FAKE_WORLD_SIZE = 15
 
 def load_scenario(scenario_file):
     scenario = open(scenario_file).read()
-    map, right_actions_string = scenario.split('\n\n')
-    observation = np.asarray(
-        [[SCENARIO_MAPPING[char] for char in list(line)] for line in map.split('\n')]
-    ).T
-    right_actions = [Action.from_letter(ra) for ra in list(right_actions_string.rstrip())]
-    return observation, right_actions
+    text_scene, expected_actions_string = scenario.split('\n\n')
+    environment = text_scene_to_environment(text_scene)
+    expected_actions = [Action.from_letter(ra) for ra in list(expected_actions_string.rstrip())]
+    return environment, expected_actions
 
 
 def run_scenario(scenario, creature, world, verbose, repetitions=1):

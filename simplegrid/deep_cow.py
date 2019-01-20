@@ -53,11 +53,7 @@ class DeepCow(SimpleCow):
         cows[cows < 0] = 0
         cows[cows > 0] = 1
 
-        res = grass
-
-        return res
-
-        # return np.concatenate((grass, cows))
+        return grass
 
     def step(self, observation):
         if self.energy > MAX_ENERGY:

@@ -15,8 +15,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 class DQNAgent:
     def __init__(self, model, epsilon):
         """Create an agent using a model. Typically you want to call either from_stored_model or from_dimensions."""
-        self.memory = deque(maxlen=5000)
-        self.gamma = 0.95  # discount rate
+        self.memory = deque(maxlen=25000)
+        self.gamma = 0.25  # discount rate
         self.epsilon = epsilon
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995

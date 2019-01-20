@@ -2,6 +2,7 @@ import colorsys
 import math
 import random
 from enum import IntEnum
+import numpy as np
 
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -11,6 +12,7 @@ YELLOW = (255, 255, 0)
 
 
 MAX_ENERGY = 1000
+SCENARIO_MAPPING = {char: idx - 1 for idx, char in enumerate('#.@')}
 
 
 class Action(IntEnum):
@@ -47,6 +49,11 @@ def random_color():
     lightness = random.uniform(0.5, 0.8)
     saturation = random.uniform(0.7, 0.9)
     return tuple(map(lambda f: int(f * 255), colorsys.hls_to_rgb(hue, lightness, saturation)))
+
+
+def text_scene_to_environment(text_scene):
+    text_scene = text_scene.strip()
+    return np.asarray([[SCENARIO_MAPPING[chr] for chr in line] for line in text_scene.split('\n')]).T
 
 
 class SimpleCow(object):
