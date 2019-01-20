@@ -51,7 +51,7 @@ def random_color():
     return tuple(map(lambda f: int(f * 255), colorsys.hls_to_rgb(hue, lightness, saturation)))
 
 
-def text_scene_to_observation(text_scene):
+def text_scene_to_environment(text_scene):
     text_scene = text_scene.strip()
     return np.asarray([[SCENARIO_MAPPING[chr] for chr in line] for line in text_scene.split('\n')]).T
 
