@@ -14,8 +14,8 @@ YELLOW = (255, 255, 0)
 class DeepCow(SimpleCow):
     agent = None
 
-    def __init__(self, x, y, settings):
-        super().__init__(x, y, settings)
+    def __init__(self, x, y, settings, energy=None):
+        super().__init__(x, y, settings, energy)
         self.settings = settings
         self.color = YELLOW
         self.prev_state = None

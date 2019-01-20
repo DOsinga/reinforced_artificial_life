@@ -51,18 +51,18 @@ def random_color():
 class SimpleCow(object):
     id_count = 1
 
-    def __init__(self, x, y, settings):
+    def __init__(self, x, y, settings, energy=None):
         self.x = x
         self.y = y
+        self.settings = settings
         self.color = random_color()
         self.actioncolor = BLACK
-        self.energy = settings.init_energy
+        self.energy = energy or settings.init_energy
         self.id = SimpleCow.id_count
         SimpleCow.id_count += 1
 
     def step(self, observation):
         if self.energy > MAX_ENERGY:
-            self.actioncolor = YELLOW
             return Action.SPLIT
 
         return random.choice(list(Action)[1:-1])
@@ -83,7 +83,7 @@ class SimpleCow(object):
         # )
 
     def split(self):
-        new_creature = self.__class__(self.x, self.y, self.energy / 2, color=self.color)
+        new_creature = self.__class__(self.x, self.y, self.settings, self.energy / 2)
         self.energy /= 2
         return new_creature
 
@@ -92,14 +92,13 @@ class SimpleCow(object):
 
 
 class GreedyCow(SimpleCow):
-    def __init__(self, x, y, settings):
-        super().__init__(x, y, settings)
+    def __init__(self, x, y, settings, energy=None):
+        super().__init__(x, y, settings, energy)
         self.color = RED
 
     def step(self, observation):
 
         if self.energy > MAX_ENERGY:
-            self.actioncolor = YELLOW
             return Action.SPLIT
 
         offset = observation.shape[0] // 2

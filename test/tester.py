@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     DeepCow.restore_state(settings)
     CreatureClass = CREATURES[args.creature]
-    creature = CreatureClass(0, 0, 0, 0)
+    creature = CreatureClass(0, 0, settings)
 
     correct = 0
     for scenario_file in sorted(scenario_files):
