@@ -42,6 +42,8 @@ def run_scenario(scenario, creature, verbose, repetitions=1):
         print()
     else:
         print(f'{scenario:<25} {result_string}')
+    if settings.show_weights:
+        creature.agent.show_weights()
     return result / repetitions
 
 
@@ -78,13 +80,20 @@ def parse_arguments():
         action='store_false',
         help='Pass terse to see output of only one line per test (this is the default).',
     )
+    parser.add_argument(
+        '--showweights',
+        required=False,
+        dest='show_weights',
+        action='store_true',
+        help='Shows network weights.',
+    )
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = parse_arguments()
 
-    settings = ExperimentSettings(args.experiment)
+    settings = ExperimentSettings(args.experiment, args.show_weights)
     print('Testing experiment', settings.path)
     settings.path = os.path.join('..', settings.path)
 

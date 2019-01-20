@@ -12,3 +12,5 @@ world_size: 60
 scale: 10
 view_distance: 1
 steps_per_episode: 1600
+
+layers: [24,24]

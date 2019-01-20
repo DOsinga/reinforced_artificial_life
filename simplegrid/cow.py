@@ -7,7 +7,6 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
-YELLOW = (255, 255, 0)
 
 
 MAX_ENERGY = 1000
@@ -52,12 +51,12 @@ def random_color():
 class SimpleCow(object):
     id_count = 1
 
-    def __init__(self, x, y, energy, color=None):
+    def __init__(self, x, y, settings):
         self.x = x
         self.y = y
-        self.color = color if color else random_color()
+        self.color = random_color()
         self.actioncolor = BLACK
-        self.energy = energy
+        self.energy = settings.init_energy
         self.id = SimpleCow.id_count
         SimpleCow.id_count += 1
 
@@ -93,6 +92,10 @@ class SimpleCow(object):
 
 
 class GreedyCow(SimpleCow):
+    def __init__(self, x, y, settings):
+        super().__init__(x, y, settings)
+        self.color = RED
+
     def step(self, observation):
 
         if self.energy > MAX_ENERGY:
