@@ -2,15 +2,20 @@
 import sys
 import os
 import argparse
+from unittest.mock import MagicMock
+
 import numpy as np
 
 from simplegrid.cow import Action, GreedyCow
 from simplegrid.deep_cow import DeepCow
 from shared.experiment_settings import ExperimentSettings
+from simplegrid.world import World
 
 TESTS_DIR = os.path.join(os.path.dirname(__file__), 'tests')
 SCENARIO_MAPPING = {char: idx - 1 for idx, char in enumerate('#.@')}
 CREATURES = {'greedy': GreedyCow, 'deep': DeepCow}
+
+FAKE_WORLD_SIZE = 15
 
 
 def load_scenario(scenario_file):
@@ -23,8 +28,19 @@ def load_scenario(scenario_file):
     return observation, right_actions
 
 
-def run_scenario(scenario, creature, verbose, repetitions=1):
-    observation, right_actions = load_scenario(scenario)
+def run_scenario(scenario, creature, world, verbose, repetitions=1):
+    environment, right_actions = load_scenario(scenario)
+    w, h = environment.shape
+    x = (FAKE_WORLD_SIZE - w) // 2
+    y = (FAKE_WORLD_SIZE - h) // 2
+    world.reset(MagicMock(), 0)
+    world.cells[x: x + w, y: y + h] = environment
+    creature.x = FAKE_WORLD_SIZE // 2
+    creature.y = FAKE_WORLD_SIZE // 2
+    world.add_new_creature(creature)
+    environment = world.get_observation(creature)
+    observation = world.get_observation(creature)
+
     result = 0
     chosen_actions = []
     for _ in range(repetitions):
@@ -35,7 +51,7 @@ def run_scenario(scenario, creature, verbose, repetitions=1):
     if verbose:
         print()
         print('Scenario', scenario)
-        print(observation.T)
+        print(environment.T)
         print('Right actions:', right_actions)
         print('Chosen actions:', chosen_actions[:20])
         print(result_string)
@@ -51,8 +67,8 @@ def parse_arguments():
         '--experiment',
         type=str,
         required=True,
-        help='Required argument specifying the experiment to run. This should be a directory '
-        'where the specific settings and various state files are stored. Directoy will '
+        help='Specifies the experiment to run. This should be a directory '
+        'where the specific settings and various state files are stored. Directory will '
         'be created and initialized if it does not exist.',
     )
     parser.add_argument(
@@ -60,14 +76,14 @@ def parse_arguments():
         type=str,
         choices=list(CREATURES),
         required=True,
-        help='Required argument that specifies wich creature will be tested. Options are greedy or deep.',
+        help='Specifies which creature will be tested. Options are greedy or deep.',
     )
     parser.add_argument(
         '--test',
         type=str,
         required=False,
-        help='Optional argument specifying the test to run. This should be an existing '
-        'file name in the tests diretory without the path.',
+        help='Specifies the test to run. This should be an existing '
+        'file name in the tests directory without the path.',
     )
     parser.add_argument(
         '--verbose', dest='verbose', action='store_true', help='Pass verbose to see full output.'
@@ -78,6 +94,7 @@ def parse_arguments():
         action='store_false',
         help='Pass terse to see output of only one line per test (this is the default).',
     )
+
     return parser.parse_args()
 
 
@@ -96,6 +113,10 @@ if __name__ == '__main__':
             sys.exit()
     scenario_files = [os.path.join(TESTS_DIR, scenario_file) for scenario_file in scenario_files]
 
+    settings.world_size = FAKE_WORLD_SIZE
+    settings.start_num_creatures = 0
+    fake_world = World(settings, MagicMock())
+
     DeepCow.restore_state(settings)
     DeepCow.agent.epsilon = 0.0
     CreatureClass = CREATURES[args.creature]
@@ -103,7 +124,7 @@ if __name__ == '__main__':
 
     correct = 0
     for scenario_file in sorted(scenario_files):
-        correct += run_scenario(scenario_file, creature, args.verbose, 1000)
+        correct += run_scenario(scenario_file, creature, fake_world, args.verbose, 1000)
 
     if len(scenario_files) > 1:
         percentage = 100 * correct / len(scenario_files)

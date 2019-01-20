@@ -115,7 +115,6 @@ class DQNAgent:
     def identity_test(self):
         """Run the network over inputs with each exactly one cell set to one."""
         inputs = np.identity(self.input_size)
-        inputs = np.vstack((inputs, np.array([[0, 0, 0, 0]])))
         return self.model.predict(inputs)
 
     def load_weights(self, name):

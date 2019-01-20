@@ -68,8 +68,8 @@ if __name__ == '__main__':
         '--experiment',
         type=str,
         required=False,
-        help='Optional argument specifying the experiment to run. This should be a directory '
-        'where the specific settings and various state files are stored. Directoy will '
+        help='Specifies the experiment to run. This should be a directory '
+        'where the specific settings and various state files are stored. Directory will '
         'be created and initialized if it does not exist.',
     )
     args = parser.parse_args()

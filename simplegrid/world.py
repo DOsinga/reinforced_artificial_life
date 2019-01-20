@@ -43,10 +43,6 @@ class World:
             x, y = self.free_spot()
             self.add_new_creature(DeepCow(x, y, self.settings.init_energy, YELLOW))
 
-        if DeepCow.agent:
-            print('generation start:')
-            print(DeepCow.agent.identity_test())
-
     def end(self):
         self.episode.save(self.settings)
         DeepCow.save_state(self.settings)
