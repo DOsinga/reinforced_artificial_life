@@ -38,6 +38,8 @@ class DeepCow(SimpleCow):
         cows[cows < 0] = 0
         cows[cows > 0] = 1
 
+        return grass
+
         # Temporarily return a much simpler state, just the directions:
         # (up, right, down, left):
         return np.asarray([grass[3], grass[7], grass[5], grass[1]])

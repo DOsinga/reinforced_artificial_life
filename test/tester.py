@@ -4,24 +4,20 @@ import os
 import argparse
 import numpy as np
 
-sys.path.append('..')
-from simplegrid.cow import Action, GreedyCow
+from simplegrid.cow import Action, GreedyCow, text_scene_to_observation
 from simplegrid.deep_cow import DeepCow
 from shared.experiment_settings import ExperimentSettings
 
-TESTS_DIR = 'tests'
-SCENARIO_MAPPING = {char: idx - 1 for idx, char in enumerate('#.@')}
+TESTS_DIR = 'test/tests'
 CREATURES = {'greedy': GreedyCow, 'deep': DeepCow}
 
 
 def load_scenario(scenario_file):
     scenario = open(scenario_file).read()
-    map, right_actions_string = scenario.split('\n\n')
-    observation = np.asarray(
-        [[SCENARIO_MAPPING[char] for char in list(line)] for line in map.split('\n')]
-    ).T
-    right_actions = [Action.from_letter(ra) for ra in list(right_actions_string.rstrip())]
-    return observation, right_actions
+    text_scene, expected_actions_string = scenario.split('\n\n')
+    observation = text_scene_to_observation(text_scene)
+    expected_actions = [Action.from_letter(ra) for ra in list(expected_actions_string.rstrip())]
+    return observation, expected_actions
 
 
 def run_scenario(scenario, creature, verbose, repetitions=1):

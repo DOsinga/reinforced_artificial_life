@@ -1,6 +1,7 @@
 Rtree
 black
 gym
+jupyter
 keras
 numpy
 pip-tools
