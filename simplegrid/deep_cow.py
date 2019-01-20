@@ -39,7 +39,6 @@ class DeepCow(SimpleCow):
             diamond = observation.flatten()
             diamond = [diamond[3], diamond[7], diamond[5], diamond[1]]
         else:
-            size = observation.shape[0]
             diamond = []
             for x in range(size):
                 for y in range(size):
