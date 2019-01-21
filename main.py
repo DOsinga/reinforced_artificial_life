@@ -2,7 +2,10 @@
 import argparse
 import itertools
 
-import pygame
+import contextlib
+
+with contextlib.redirect_stdout(None):  # Suppress Hello from Pygame community message
+    import pygame
 
 from shared.display import Display
 from shared.experiment_settings import ExperimentSettings
@@ -21,7 +24,7 @@ def main(settings):
 
     world = World(settings, display)
 
-    for episode_count in itertools.count():
+    for episode_count in itertools.count( 1 ):
         # Play an episode
         episode = Episode()
         display.sidebar['episode'] = episode_count
@@ -72,8 +75,15 @@ if __name__ == '__main__':
         'where the specific settings and various state files are stored. Directory will '
         'be created and initialized if it does not exist.',
     )
+    parser.add_argument(
+        '--showweights',
+        required=False,
+        dest='show_weights',
+        action='store_true',
+        help='Shows network weights after each generation.',
+    )
     args = parser.parse_args()
-    settings = ExperimentSettings(args.experiment)
+    settings = ExperimentSettings(args.experiment, args.show_weights)
     pygame.init()
     try:
         main(settings)

@@ -37,11 +37,15 @@ class DQNAgent:
         return cls(model, epsilon)
 
     @classmethod
-    def from_dimensions(cls, state_size, action_size):
+    def from_dimensions(cls, state_size, layers, action_size):
         """ Neural Net for Deep-Q learning Model--->>  #Q=NN.predict(state)"""
         model = Sequential()
-        model.add(Dense(24, input_dim=state_size, activation='relu'))
-        model.add(Dense(24, activation='relu'))
+        # First layer
+        model.add(Dense(layers[0], input_dim=state_size, activation='relu'))
+        # Middle layers (if any)
+        for layersize in layers[1:]:
+            model.add(Dense(layersize, activation='relu'))
+        # Output layer
         model.add(Dense(action_size, activation='linear'))
 
         return cls(model, epsilon=0.8)
@@ -117,6 +121,14 @@ class DQNAgent:
         inputs = np.identity(self.input_size)
         return self.model.predict(inputs)
 
+    def show_weights(self):
+        for idx, layer in enumerate(self.model.layers):
+            print(f'\nLayer {idx} weights (rows are inputs, columns are outputs:')
+            print(layer.get_weights()[0])
+            print(f'Layer {idx} biases:')
+            print(layer.get_weights()[1])
+        print()
+
     def load_weights(self, name):
         self.model.load_weights(name)
 
@@ -140,4 +152,4 @@ class DQNAgent:
     def save_model(self, name):
         model_json = json.loads(self.model.to_json(indent=2))
         with open(name, 'w') as json_file:
-            json.dump({'model': model_json, 'epsilon': self.epsilon}, json_file)
+            json.dump({'model': model_json, 'epsilon': self.epsilon}, json_file, indent=2)

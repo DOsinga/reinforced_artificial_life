@@ -10,13 +10,16 @@ from simplegrid.map_feature import MapFeature
 HISTORY_FILE = 'deep_cow_history.jsonl'
 WEIGHTS_FILE = 'deep_cow_model_weights.h5'
 MODEL_FILE = 'deep_cow_model.json'
+YELLOW = (255, 255, 0)
 
 
 class DeepCow(SimpleCow):
     agent = None
 
-    def __init__(self, x, y, energy, color=None):
-        super().__init__(x, y, energy, color)
+    def __init__(self, x, y, settings, energy=None):
+        super().__init__(x, y, settings, energy)
+        self.settings = settings
+        self.color = YELLOW
         self.prev_state = None
         self.prev_reward = None
         self.prev_action_idx = None
@@ -62,7 +65,9 @@ class DeepCow(SimpleCow):
         self.prev_action_idx = self.action_idx
         self.state = self.to_internal_state(observation)
         if not DeepCow.agent:
-            DeepCow.agent = DQNAgent.from_dimensions(len(self.state), action_size=4)
+            DeepCow.agent = DQNAgent.from_dimensions(
+                len(self.state), layers=self.settings.layers, action_size=4
+            )
         self.action_idx = DeepCow.agent.act(self.state)
         return Action(self.action_idx + 1)
 
@@ -79,7 +84,9 @@ class DeepCow(SimpleCow):
         model_file = settings.get_path(MODEL_FILE)
         if model_file and os.path.isfile(model_file):
             DeepCow.agent = DQNAgent.from_stored_model(model_file)
-            DeepCow.agent.load_weights(settings.get_path(WEIGHTS_FILE))
+            weights_file = settings.get_path(WEIGHTS_FILE)
+            if weights_file and os.path.isfile(weights_file):
+                DeepCow.agent.load_weights(settings.get_path(weights_file))
 
     @classmethod
     def save_state(cls, settings):

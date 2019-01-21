@@ -2,11 +2,10 @@
 import os
 import random
 from collections import Counter, defaultdict, deque
-from enum import IntEnum, Enum
 
 import numpy as np
 
-from simplegrid.cow import GreedyCow, SmartCow, Action, RED, YELLOW, ORANGE
+from simplegrid.cow import GreedyCow, Action
 from simplegrid.deep_cow import DeepCow
 from simplegrid.map_feature import MapFeature
 
@@ -52,9 +51,16 @@ class World:
 
         for _ in range(self.settings.start_num_creatures):
             x, y = self.free_spot()
-            self.add_new_creature(SmartCow(x, y, self.settings.init_energy, ORANGE))
+            self.add_new_creature(GreedyCow(x, y, self.settings))
             x, y = self.free_spot()
-            self.add_new_creature(DeepCow(x, y, self.settings.init_energy, YELLOW))
+            self.add_new_creature(DeepCow(x, y, self.settings))
+
+        if DeepCow.agent:
+            np.set_printoptions(precision=2, suppress=True)
+            #print('\nIdentity test at generation start:')
+            #print(DeepCow.agent.identity_test())
+            if self.settings.show_weights:
+                DeepCow.agent.show_weights()
 
     def end(self):
         self.episode.save(self.settings)
