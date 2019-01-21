@@ -4,12 +4,10 @@ import os
 import argparse
 from unittest.mock import MagicMock
 
-import numpy as np
-
-from simplegrid.cow import Action, GreedyCow, text_scene_to_environment
+from simplegrid.cow import Action, GreedyCow
 from simplegrid.deep_cow import DeepCow
 from shared.experiment_settings import ExperimentSettings
-from simplegrid.world import World
+from simplegrid.world import World, MapFeature
 
 TESTS_DIR = os.path.join(os.path.dirname(__file__), 'tests')
 CREATURES = {'greedy': GreedyCow, 'deep': DeepCow}
@@ -20,7 +18,7 @@ FAKE_WORLD_SIZE = 15
 def load_scenario(scenario_file):
     scenario = open(scenario_file).read()
     text_scene, expected_actions_string = scenario.split('\n\n')
-    environment = text_scene_to_environment(text_scene)
+    environment = MapFeature.text_scene_to_environment(text_scene)
     expected_actions = [Action.from_letter(ra) for ra in list(expected_actions_string.rstrip())]
     return environment, expected_actions
 
@@ -43,7 +41,7 @@ def run_scenario(scenario, creature, world, verbose, repetitions=1):
         chosen_action = creature.step(observation)
         chosen_actions += [chosen_action]
         result += chosen_action in right_actions
-    result_string = f'{100*result/repetitions:4.0f}% passed'
+    result_string = f'{100 * result / repetitions:4.0f}% passed'
     if verbose:
         print()
         print('Scenario', scenario)

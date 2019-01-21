@@ -5,6 +5,8 @@ from simplegrid.dqn_agent import DQNAgent
 
 import numpy as np
 
+from simplegrid.map_feature import MapFeature
+
 HISTORY_FILE = 'deep_cow_history.jsonl'
 WEIGHTS_FILE = 'deep_cow_model_weights.h5'
 MODEL_FILE = 'deep_cow_model.json'
@@ -46,14 +48,10 @@ class DeepCow(SimpleCow):
                         diamond.append(observation[x][y])
         diamond = np.asarray(diamond)
 
-        grass = np.copy(diamond).flatten()
-        grass[grass > 0] = 0
-        grass[grass < 0] = 1
-        cows = np.copy(diamond).flatten()
-        cows[cows < 0] = 0
-        cows[cows > 0] = 1
+        grass = MapFeature.GRASS.to_feature_vector(diamond)
+        rock = MapFeature.ROCK.to_feature_vector(diamond)
 
-        return grass
+        return np.concatenate((grass, rock))
 
     def step(self, observation):
         if self.energy > MAX_ENERGY:
