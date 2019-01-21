@@ -54,6 +54,8 @@ def run_scenario(scenario, creature, world, verbose, repetitions=1):
         print()
     else:
         print(f'{scenario:<25} {result_string}')
+    if settings.show_weights:
+        creature.agent.show_weights()
     return result / repetitions
 
 
@@ -90,14 +92,20 @@ def parse_arguments():
         action='store_false',
         help='Pass terse to see output of only one line per test (this is the default).',
     )
-
+    parser.add_argument(
+        '--showweights',
+        required=False,
+        dest='show_weights',
+        action='store_true',
+        help='Shows network weights.',
+    )
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = parse_arguments()
 
-    settings = ExperimentSettings(args.experiment)
+    settings = ExperimentSettings(args.experiment, args.show_weights)
     print('Testing experiment', settings.path)
 
     if args.test:
@@ -116,7 +124,7 @@ if __name__ == '__main__':
     DeepCow.restore_state(settings)
     DeepCow.agent.epsilon = 0.0
     CreatureClass = CREATURES[args.creature]
-    creature = CreatureClass(0, 0, 0, 0)
+    creature = CreatureClass(0, 0, settings)
 
     correct = 0
     for scenario_file in sorted(scenario_files):

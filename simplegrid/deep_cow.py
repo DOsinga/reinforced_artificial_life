@@ -8,13 +8,16 @@ import numpy as np
 HISTORY_FILE = 'deep_cow_history.jsonl'
 WEIGHTS_FILE = 'deep_cow_model_weights.h5'
 MODEL_FILE = 'deep_cow_model.json'
+YELLOW = (255, 255, 0)
 
 
 class DeepCow(SimpleCow):
     agent = None
 
-    def __init__(self, x, y, energy, color=None):
-        super().__init__(x, y, energy, color)
+    def __init__(self, x, y, settings, energy=None):
+        super().__init__(x, y, settings, energy)
+        self.settings = settings
+        self.color = YELLOW
         self.prev_state = None
         self.prev_reward = None
         self.prev_action_idx = None
@@ -64,7 +67,9 @@ class DeepCow(SimpleCow):
         self.prev_action_idx = self.action_idx
         self.state = self.to_internal_state(observation)
         if not DeepCow.agent:
-            DeepCow.agent = DQNAgent.from_dimensions(len(self.state), action_size=4)
+            DeepCow.agent = DQNAgent.from_dimensions(
+                len(self.state), layers=self.settings.layers, action_size=4
+            )
         self.action_idx = DeepCow.agent.act(self.state)
         return Action(self.action_idx + 1)
 
