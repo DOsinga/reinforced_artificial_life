@@ -86,7 +86,7 @@ class DeepCow(SimpleCow):
             DeepCow.agent = DQNAgent.from_stored_model(model_file)
             weights_file = settings.get_path(WEIGHTS_FILE)
             if weights_file and os.path.isfile(weights_file):
-                DeepCow.agent.load_weights(settings.get_path(weights_file))
+                DeepCow.agent.load_weights(weights_file)
 
     @classmethod
     def save_state(cls, settings):
