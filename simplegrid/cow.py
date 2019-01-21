@@ -3,13 +3,16 @@ import math
 import random
 from enum import IntEnum
 import numpy as np
+import operator
+
+from simplegrid.map_feature import MapFeature
 
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
-
+ORANGE = (255, 140, 0)
 
 MAX_ENERGY = 1000
 SCENARIO_MAPPING = {char: idx - 1 for idx, char in enumerate('#.@')}
@@ -111,3 +114,42 @@ class GreedyCow(SimpleCow):
             return random.choice(interesting_actions)
         else:
             return Action.RIGHT  # Was: random.choice(possible_actions)
+
+
+class SmartCow(SimpleCow):
+    def step(self, observation):
+
+        if self.energy > MAX_ENERGY:
+            self.actioncolor = YELLOW
+            return Action.SPLIT
+
+        size = observation.shape[0]
+        view_distance = size // 2
+        possible_actions = {a: 0.0 for a in list(Action)[1:-1]}
+
+        for col in range(size):
+            x = col - view_distance
+            for row in range(size):
+                y = row - view_distance
+                dist = abs(x) + abs(y)
+                value = observation[col, row]
+                if 0 < dist <= view_distance:
+                    if value == MapFeature.GRASS.index:
+                        reward = 1
+                    elif value == MapFeature.ROCK.index:
+                        reward = -1
+                    elif value == MapFeature.CREATURE.index:
+                        reward = -0.5
+                    else:
+                        continue
+                    reward /= (dist * dist)
+                    if x < 0:
+                        possible_actions[Action.LEFT] += reward
+                    elif x > 0:
+                        possible_actions[Action.RIGHT] += reward
+                    if y < 0:
+                        possible_actions[Action.UP] += reward
+                    elif y > 0:
+                        possible_actions[Action.DOWN] += reward
+        best_action = max(possible_actions.items(), key=operator.itemgetter(1))[0]
+        return best_action
