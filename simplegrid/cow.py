@@ -3,13 +3,14 @@ import math
 import random
 from enum import IntEnum
 import numpy as np
+import operator
 
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
-
+ORANGE = (255, 140, 0)
 
 MAX_ENERGY = 1000
 SCENARIO_MAPPING = {char: idx - 1 for idx, char in enumerate('#.@')}
@@ -53,7 +54,9 @@ def random_color():
 
 def text_scene_to_environment(text_scene):
     text_scene = text_scene.strip()
-    return np.asarray([[SCENARIO_MAPPING[chr] for chr in line] for line in text_scene.split('\n')]).T
+    return np.asarray(
+        [[SCENARIO_MAPPING[chr] for chr in line] for line in text_scene.split('\n')]
+    ).T
 
 
 class SimpleCow(object):
@@ -116,3 +119,32 @@ class GreedyCow(SimpleCow):
             return random.choice(interesting_actions)
         else:
             return Action.RIGHT  # Was: random.choice(possible_actions)
+
+
+class SmartCow(SimpleCow):
+    def step(self, observation):
+
+        if self.energy > MAX_ENERGY:
+            self.actioncolor = YELLOW
+            return Action.SPLIT
+
+        size = observation.shape[0]
+        view_distance = size // 2
+        possible_actions = {a: 0.0 for a in list(Action)[1:-1]}
+
+        for col in range(size):
+            x = col - view_distance
+            for row in range(size):
+                y = row - view_distance
+                dist = abs(x) + abs(y)
+                if dist <= view_distance and observation[col, row] == -1:
+                    if x < 0:
+                        possible_actions[Action.LEFT] += 1 / dist
+                    elif x > 0:
+                        possible_actions[Action.RIGHT] += 1 / dist
+                    if y < 0:
+                        possible_actions[Action.UP] += 1 / dist
+                    elif y > 0:
+                        possible_actions[Action.DOWN] += 1 / dist
+        best_action = max(possible_actions.items(), key=operator.itemgetter(1))[0]
+        return best_action

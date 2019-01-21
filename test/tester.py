@@ -31,7 +31,7 @@ def run_scenario(scenario, creature, world, verbose, repetitions=1):
     x = (FAKE_WORLD_SIZE - w) // 2
     y = (FAKE_WORLD_SIZE - h) // 2
     world.reset(MagicMock(), 0)
-    world.cells[x: x + w, y: y + h] = environment
+    world.cells[x : x + w, y : y + h] = environment
     creature.x = FAKE_WORLD_SIZE // 2
     creature.y = FAKE_WORLD_SIZE // 2
     world.add_new_creature(creature)
