@@ -41,8 +41,14 @@ class World:
         c = self.size * self.size
         grass_count = int(c * grass_fraction)
         rock_count = int(c * rock_fraction)
-        for idx_choice, idx_val in enumerate(np.random.choice(c, grass_count + rock_count, replace=False)):
-            self.set_cell(idx_val // self.size, idx_val % self.size, MapFeature.GRASS.index if idx_choice <= grass_count else MapFeature.ROCK.index)
+        for idx_choice, idx_val in enumerate(
+            np.random.choice(c, grass_count + rock_count, replace=False)
+        ):
+            self.set_cell(
+                idx_val // self.size,
+                idx_val % self.size,
+                MapFeature.GRASS.index if idx_choice <= grass_count else MapFeature.ROCK.index,
+            )
 
         for _ in range(self.settings.start_num_creatures):
             x, y = self.free_spot()

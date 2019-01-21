@@ -28,7 +28,9 @@ class MapFeature(Enum):
     @classmethod
     def text_scene_to_environment(cls, text_scene):
         text_scene = text_scene.strip()
-        return np.asarray([[cls.from_char(char).index for char in line] for line in text_scene.split('\n')]).T
+        return np.asarray(
+            [[cls.from_char(char).index for char in line] for line in text_scene.split('\n')]
+        ).T
 
     def to_feature_vector(self, vector):
         """Convert the vector to a feature vector.
@@ -43,4 +45,3 @@ class MapFeature(Enum):
         res[res == self.index] = 1
 
         return res
-

@@ -142,7 +142,7 @@ class SmartCow(SimpleCow):
                         reward = -0.5
                     else:
                         continue
-                    reward /= (dist * dist)
+                    reward /= dist * dist
                     if x < 0:
                         possible_actions[Action.LEFT] += reward
                     elif x > 0:
