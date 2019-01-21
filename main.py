@@ -17,7 +17,7 @@ FRAME_RATE = 60
 TITLE = 'Reinforced Artificial Life'
 
 
-def main(settings):
+def main(settings, show_weights):
 
     display = Display(TITLE, settings.world_size, settings.scale)
     clock = pygame.time.Clock()
@@ -62,7 +62,7 @@ def main(settings):
             clock.tick(FRAME_RATE)
             display.flip()
             pygame.display.set_caption(TITLE + ' ' + world.get_info())
-        world.end()
+        world.end(show_weights=show_weights)
 
 
 if __name__ == '__main__':
@@ -83,9 +83,9 @@ if __name__ == '__main__':
         help='Shows network weights after each generation.',
     )
     args = parser.parse_args()
-    settings = ExperimentSettings(args.experiment, args.show_weights)
+    settings = ExperimentSettings(args.experiment)
     pygame.init()
     try:
-        main(settings)
+        main(settings, args.show_weights)
     finally:
         pygame.quit()

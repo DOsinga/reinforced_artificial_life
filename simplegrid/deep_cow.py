@@ -1,6 +1,6 @@
 import os
 
-from simplegrid.cow import SimpleCow, Action, MAX_ENERGY
+from simplegrid.cow import AbstractCow, Action, MAX_ENERGY
 from simplegrid.dqn_agent import DQNAgent
 
 import numpy as np
@@ -10,16 +10,14 @@ from simplegrid.map_feature import MapFeature
 HISTORY_FILE = 'deep_cow_history.jsonl'
 WEIGHTS_FILE = 'deep_cow_model_weights.h5'
 MODEL_FILE = 'deep_cow_model.json'
-YELLOW = (255, 255, 0)
 
 
-class DeepCow(SimpleCow):
+class DeepCow(AbstractCow):
     agent = None
+    COLOR = (240, 240, 20)
 
     def __init__(self, x, y, settings, energy=None):
         super().__init__(x, y, settings, energy)
-        self.settings = settings
-        self.color = YELLOW
         self.prev_state = None
         self.prev_reward = None
         self.prev_action_idx = None

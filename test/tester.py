@@ -23,7 +23,7 @@ def load_scenario(scenario_file):
     return environment, expected_actions
 
 
-def run_scenario(scenario, creature, world, verbose, repetitions=1):
+def run_scenario(scenario, creature, world, verbose, *, repetitions=1, show_weights=False):
     environment, right_actions = load_scenario(scenario)
     w, h = environment.shape
     x = (FAKE_WORLD_SIZE - w) // 2
@@ -52,7 +52,7 @@ def run_scenario(scenario, creature, world, verbose, repetitions=1):
         print()
     else:
         print(f'{scenario:<25} {result_string}')
-    if settings.show_weights:
+    if show_weights:
         creature.agent.show_weights()
     return result / repetitions
 
@@ -103,7 +103,7 @@ def parse_arguments():
 if __name__ == '__main__':
     args = parse_arguments()
 
-    settings = ExperimentSettings(args.experiment, args.show_weights)
+    settings = ExperimentSettings(args.experiment)
     print('Testing experiment', settings.path)
 
     if args.test:
@@ -126,7 +126,7 @@ if __name__ == '__main__':
 
     correct = 0
     for scenario_file in sorted(scenario_files):
-        correct += run_scenario(scenario_file, creature, fake_world, args.verbose, 1000)
+        correct += run_scenario(scenario_file, creature, fake_world, args.verbose, show_weights=args.show_weights)
 
     if len(scenario_files) > 1:
         percentage = 100 * correct / len(scenario_files)

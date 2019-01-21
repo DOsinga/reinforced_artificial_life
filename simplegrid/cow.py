@@ -1,22 +1,12 @@
-import colorsys
 import math
 import random
 from enum import IntEnum
-import numpy as np
 import operator
+import abc
 
 from simplegrid.map_feature import MapFeature
 
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-YELLOW = (255, 255, 0)
-ORANGE = (255, 140, 0)
-
 MAX_ENERGY = 1000
-SCENARIO_MAPPING = {char: idx - 1 for idx, char in enumerate('#.@')}
-
 
 class Action(IntEnum):
     NONE = 0
@@ -43,50 +33,36 @@ class Action(IntEnum):
         }[self]
 
     def to_observation(self, offset):
-        dir = self.to_direction()
-        return dir[0] + offset, dir[1] + offset
+        direction = self.to_direction()
+        return direction[0] + offset, direction[1] + offset
 
 
-def random_color():
-    hue = random.uniform(0.5, 1.1)
-    lightness = random.uniform(0.5, 0.8)
-    saturation = random.uniform(0.7, 0.9)
-    return tuple(map(lambda f: int(f * 255), colorsys.hls_to_rgb(hue, lightness, saturation)))
-
-
-class SimpleCow(object):
+class AbstractCow(abc.ABC):
     id_count = 1
+
+    def __init_subclass__(cls, **kwargs):
+        if not hasattr(cls, 'COLOR'):
+            raise TypeError('Cows need to declare their color')
 
     def __init__(self, x, y, settings, energy=None):
         self.x = x
         self.y = y
         self.settings = settings
-        self.color = random_color()
-        self.actioncolor = BLACK
         self.energy = energy or settings.init_energy
-        self.id = SimpleCow.id_count
-        SimpleCow.id_count += 1
+        self.id = AbstractCow.id_count
+        AbstractCow.id_count += 1
 
+    @abc.abstractmethod
     def step(self, observation):
-        if self.energy > MAX_ENERGY:
-            return Action.SPLIT
-
-        return random.choice(list(Action)[1:-1])
+        pass
 
     def learn(self, reward, done):
         pass
 
     def draw(self, display):
         display.circle(
-            self.x, self.y, math.sqrt(min(0.64, 2 * self.energy / MAX_ENERGY)), self.color
+            self.x, self.y, math.sqrt(min(0.64, 2 * self.energy / MAX_ENERGY)), self.__class__.COLOR
         )
-        # Action color is interesting for later. For now it has no use
-        # display.circle(
-        #     self.x,
-        #     self.y,
-        #     0.3 * min(0.8, math.sqrt(2 * self.energy / MAX_ENERGY)),
-        #     self.actioncolor,
-        # )
 
     def split(self):
         new_creature = self.__class__(self.x, self.y, self.settings, self.energy / 2)
@@ -97,10 +73,20 @@ class SimpleCow(object):
         return '\%s:%02d/' % (self.__class__.__name__, self.id)
 
 
-class GreedyCow(SimpleCow):
-    def __init__(self, x, y, settings, energy=None):
-        super().__init__(x, y, settings, energy)
-        self.color = RED
+class SimpleCow(AbstractCow):
+
+    COLOR = (120, 240, 20)
+
+    def step(self, observation):
+        if self.energy > MAX_ENERGY:
+            return Action.SPLIT
+
+        return random.choice(list(Action)[1:-1])
+
+
+class GreedyCow(AbstractCow):
+
+    COLOR = (240, 20, 20)
 
     def step(self, observation):
 
@@ -120,10 +106,12 @@ class GreedyCow(SimpleCow):
 
 
 class SmartCow(SimpleCow):
+
+    COLOR = (240, 120, 20)
+
     def step(self, observation):
 
         if self.energy > MAX_ENERGY:
-            self.actioncolor = YELLOW
             return Action.SPLIT
 
         size = observation.shape[0]

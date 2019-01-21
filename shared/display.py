@@ -37,7 +37,7 @@ class Display:
 
     def rectangle(self, x, y, size, color, padding=0):
         x1, y1 = self.to_display_coords(x + padding, y + padding)
-        x2, y2 = self.to_display_coords(x + 1 - padding, y + 1 - padding)
+        x2, y2 = self.to_display_coords(x + size - padding, y + size - padding)
         w = x2 - x1
         h = y2 - y1
         pygame.draw.rect(self.screen, color, (x1, y1, w, h), 0)
