@@ -5,6 +5,8 @@ from enum import IntEnum
 import numpy as np
 import operator
 
+from simplegrid.map_feature import MapFeature
+
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
@@ -50,13 +52,6 @@ def random_color():
     lightness = random.uniform(0.5, 0.8)
     saturation = random.uniform(0.7, 0.9)
     return tuple(map(lambda f: int(f * 255), colorsys.hls_to_rgb(hue, lightness, saturation)))
-
-
-def text_scene_to_environment(text_scene):
-    text_scene = text_scene.strip()
-    return np.asarray(
-        [[SCENARIO_MAPPING[chr] for chr in line] for line in text_scene.split('\n')]
-    ).T
 
 
 class SimpleCow(object):
@@ -140,14 +135,24 @@ class SmartCow(SimpleCow):
             for row in range(size):
                 y = row - view_distance
                 dist = abs(x) + abs(y)
-                if dist <= view_distance and observation[col, row] == -1:
+                value = observation[col, row]
+                if 0 < dist <= view_distance:
+                    if value == MapFeature.GRASS.index:
+                        reward = 1
+                    elif value == MapFeature.ROCK.index:
+                        reward = -1
+                    elif value == MapFeature.CREATURE.index:
+                        reward = -0.5
+                    else:
+                        continue
+                    reward /= dist * dist
                     if x < 0:
-                        possible_actions[Action.LEFT] += 1 / dist
+                        possible_actions[Action.LEFT] += reward
                     elif x > 0:
-                        possible_actions[Action.RIGHT] += 1 / dist
+                        possible_actions[Action.RIGHT] += reward
                     if y < 0:
-                        possible_actions[Action.UP] += 1 / dist
+                        possible_actions[Action.UP] += reward
                     elif y > 0:
-                        possible_actions[Action.DOWN] += 1 / dist
+                        possible_actions[Action.DOWN] += reward
         best_action = max(possible_actions.items(), key=operator.itemgetter(1))[0]
         return best_action

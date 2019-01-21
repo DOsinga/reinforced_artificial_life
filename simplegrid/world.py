@@ -2,11 +2,12 @@
 import os
 import random
 from collections import Counter, defaultdict, deque
-import itertools
+
 import numpy as np
 
-from simplegrid.cow import GreedyCow, SmartCow, Action, RED, YELLOW, ORANGE
+from simplegrid.cow import Action, SmartCow
 from simplegrid.deep_cow import DeepCow
+from simplegrid.map_feature import MapFeature
 
 
 class World:
@@ -18,6 +19,7 @@ class World:
             display.sidebar[os.path.basename(os.path.normpath(settings.path))] = ''
 
         self.creatures = {}
+        self.energies = {}
         self.settings = settings
         self.size = settings.world_size
         self.cells = np.zeros((self.size, self.size))
@@ -25,21 +27,31 @@ class World:
         self.winstreak = deque(maxlen=9)
         DeepCow.restore_state(settings)
 
-    def reset(self, episode, start_grass_fraction=None):
-        if start_grass_fraction is None:
-            start_grass_fraction = self.settings.start_grass_fraction
+    def reset(self, episode, grass_fraction=None, rock_fraction=None):
+        if grass_fraction is None:
+            grass_fraction = self.settings.start_grass_fraction
+        if rock_fraction is None:
+            rock_fraction = self.settings.start_rock_fraction
         self.counts = {}
         self.episode = episode
         self.creatures = {}
         self.cells.fill(0)
         self.steps = 0
         c = self.size * self.size
-        for i in np.random.choice(c, int(start_grass_fraction * c)):
-            self.set_cell(i // self.size, i % self.size, -1)
+        grass_count = int(c * grass_fraction)
+        rock_count = int(c * rock_fraction)
+        for idx_choice, idx_val in enumerate(
+            np.random.choice(c, grass_count + rock_count, replace=False)
+        ):
+            self.set_cell(
+                idx_val // self.size,
+                idx_val % self.size,
+                MapFeature.GRASS.index if idx_choice <= grass_count else MapFeature.ROCK.index,
+            )
 
         for _ in range(self.settings.start_num_creatures):
             x, y = self.free_spot()
-            self.add_new_creature(GreedyCow(x, y, self.settings))
+            self.add_new_creature(SmartCow(x, y, self.settings))
             x, y = self.free_spot()
             self.add_new_creature(DeepCow(x, y, self.settings))
 
@@ -118,7 +130,7 @@ class World:
             x = random.randrange(self.size)
             y = random.randrange(self.size)
             if self.cells[x, y] == 0:
-                self.set_cell(x, y, -1)
+                self.set_cell(x, y, MapFeature.GRASS.index)
 
         self.episode.next_frame()
         self.counts = Counter(creature.__class__.__name__ for creature in self.creatures.values())
@@ -143,9 +155,9 @@ class World:
             for y in range(self.size):
                 idx = self.cells[x, y]
                 if idx < 0:
-                    color = (100, 240, 100)
-                    display.rectangle(x, y, 1, color, padding=0.1)
-                    grass_count += 1
+                    display.rectangle(x, y, 1, MapFeature(idx).color, padding=0.1)
+                    if idx == MapFeature.GRASS.index:
+                        grass_count += 1
                 elif idx > 0:
                     self.creatures[idx].draw(display)
         display.sidebar['Winner streak'] = ''.join(self.winstreak)
@@ -181,8 +193,8 @@ class World:
         else:
             self.set_cell(creature.x, creature.y, 0)
             x, y = self.apply_direction(action, creature.x, creature.y)
-            if self.cells[x, y] <= 0:
-                if self.cells[x, y] == -1:
+            if self.cells[x, y] in (MapFeature.GRASS.index, MapFeature.EMPTY.index):
+                if self.cells[x, y] == MapFeature.GRASS.index:
                     reward += 1
                     creature.energy += self.settings.grass_energy
                 creature.x = x
@@ -212,11 +224,6 @@ class World:
         for y in range(self.size):
             print(f'{y:>2}' + ' ', end='')
             for x in range(self.size):
-                if self.cells[x][y] == -1:
-                    c = '.'
-                elif self.cells[x][y] == 0:
-                    c = ' '
-                else:
-                    c = 'C'
-                print(' ' + c + ' ', end='')
+                mf = MapFeature(max(1, self.cells[x][y]))
+                print(f' {mf.char} ', end='')
             print()
