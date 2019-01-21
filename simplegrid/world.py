@@ -5,7 +5,7 @@ from collections import Counter, defaultdict, deque
 
 import numpy as np
 
-from simplegrid.cow import GreedyCow, Action
+from simplegrid.cow import Action, SmartCow
 from simplegrid.deep_cow import DeepCow
 from simplegrid.map_feature import MapFeature
 
@@ -51,7 +51,7 @@ class World:
 
         for _ in range(self.settings.start_num_creatures):
             x, y = self.free_spot()
-            self.add_new_creature(GreedyCow(x, y, self.settings))
+            self.add_new_creature(SmartCow(x, y, self.settings))
             x, y = self.free_spot()
             self.add_new_creature(DeepCow(x, y, self.settings))
 
