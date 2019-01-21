@@ -140,4 +140,4 @@ class DQNAgent:
     def save_model(self, name):
         model_json = json.loads(self.model.to_json(indent=2))
         with open(name, 'w') as json_file:
-            json.dump({'model': model_json, 'epsilon': self.epsilon}, json_file)
+            json.dump({'model': model_json, 'epsilon': self.epsilon}, json_file, indent=2)
