@@ -8,8 +8,8 @@ class Episode:
         self.cur_grid = []  # Internal param to keep track of the current frame grid
         self.cur_creatures = []  # Internal param to keep track of the current frame creatures
 
-    def creature_change(self, id, energy, creature_type=None):
-        creature = {'id': id, 'energy': energy}
+    def creature_change(self, creature_id, energy, creature_type=None):
+        creature = {'id': creature_id, 'energy': energy}
         if creature_type:
             creature['creature_type'] = creature_type
         self.cur_creatures += [creature]
