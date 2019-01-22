@@ -27,11 +27,13 @@ class World:
         self.winstreak = deque(maxlen=9)
         DeepCow.restore_state(settings)
 
-    def reset(self, episode, grass_fraction=None, rock_fraction=None):
+    def reset(self, episode, grass_fraction=None, rock_fraction=None, water_fraction=None):
         if grass_fraction is None:
             grass_fraction = self.settings.start_grass_fraction
         if rock_fraction is None:
             rock_fraction = self.settings.start_rock_fraction
+        if water_fraction is None:
+            water_fraction = self.settings.start_water_fraction
         self.counts = {}
         self.episode = episode
         self.creatures = {}
@@ -40,14 +42,18 @@ class World:
         c = self.size * self.size
         grass_count = int(c * grass_fraction)
         rock_count = int(c * rock_fraction)
+        water_count = int(c * water_fraction)
         for idx_choice, idx_val in enumerate(
-            np.random.choice(c, grass_count + rock_count, replace=False)
+            np.random.choice(c, grass_count + rock_count + water_count, replace=False)
         ):
-            self.set_cell(
-                idx_val // self.size,
-                idx_val % self.size,
-                MapFeature.GRASS.index if idx_choice <= grass_count else MapFeature.ROCK.index,
-            )
+            # todo: dit kan netter, zeker als we mog meer types krijgen
+            if idx_choice <= grass_count:
+                celltype = MapFeature.GRASS
+            elif idx_choice <= grass_count + rock_count:
+                celltype = MapFeature.ROCK
+            else:
+                celltype = MapFeature.WATER
+            self.set_cell(idx_val // self.size, idx_val % self.size, celltype.index)
 
         for _ in range(self.settings.start_num_creatures):
             x, y = self.free_spot()
@@ -57,8 +63,8 @@ class World:
 
         if DeepCow.agent:
             np.set_printoptions(precision=2, suppress=True)
-            #print('\nIdentity test at generation start:')
-            #print(DeepCow.agent.identity_test())
+            # print('\nIdentity test at generation start:')
+            # print(DeepCow.agent.identity_test())
             if self.settings.show_weights:
                 DeepCow.agent.show_weights()
 
@@ -182,7 +188,7 @@ class World:
         if action == Action.NONE:
             creature.energy -= self.settings.idle_cost
         elif action == Action.SPLIT:
-            # Try to find an empty spot
+            # Split, try to find an empty spot
             options = list(Action)[1:-1]  #
             random.shuffle(options)
             for option in options:
@@ -191,6 +197,7 @@ class World:
                     new_creature = creature.split()
                     break
         else:
+            # Move
             self.set_cell(creature.x, creature.y, 0)
             x, y = self.apply_direction(action, creature.x, creature.y)
             if self.cells[x, y] in (MapFeature.GRASS.index, MapFeature.EMPTY.index):
@@ -201,7 +208,8 @@ class World:
                 creature.y = y
             self.set_cell(creature.x, creature.y, creature.id)
             creature.energy -= self.settings.move_cost
-
+            if self.cells[x, y] == MapFeature.WATER.index:
+                creature.energy = 0
         done = creature.energy < self.settings.min_energy
 
         creature_energy = creature.energy

@@ -24,7 +24,7 @@ def main(settings):
 
     world = World(settings, display)
 
-    for episode_count in itertools.count( 1 ):
+    for episode_count in itertools.count(1):
         # Play an episode
         episode = Episode()
         display.sidebar['episode'] = episode_count

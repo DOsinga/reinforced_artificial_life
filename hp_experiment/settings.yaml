@@ -7,10 +7,11 @@ batch_size: 32
 
 start_num_creatures: 6
 start_grass_fraction: 0.3
+start_rock_fraction: 0
+start_water_fraction: 0.05
 grass_grow_per_turn: .9
 world_size: 50
 scale: 10
 view_distance: 2
 steps_per_episode: 1600
-
-layers: [24,24]
+layers: [36,24]
