@@ -73,7 +73,7 @@ class SimpleCow(object):
 
         return random.choice(list(Action)[1:-1])
 
-    def learn(self, reward, done):
+    def learn(self, reward):
         pass
 
     def draw(self, display):

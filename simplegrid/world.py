@@ -111,9 +111,11 @@ class World:
             observation = self.get_observation(creature)
             action = creature.step(observation)
             new_creature, reward, done = self.process_action(creature, action)
-            creature.learn(reward, done)
+            creature.learn(reward)
 
             if done:
+                # Learn one last harsh lesson
+                creature.learn(reward)
                 dead.add(creature)
             if new_creature:
                 born.append(new_creature)
@@ -209,6 +211,7 @@ class World:
             self.set_cell(creature.x, creature.y, creature.id)
             creature.energy -= self.settings.move_cost
             if self.cells[x, y] == MapFeature.WATER.index:
+                reward = -creature.energy
                 creature.energy = 0
         done = creature.energy < self.settings.min_energy
 

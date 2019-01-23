@@ -53,7 +53,7 @@ class DeepCow(SimpleCow):
 
         grass = MapFeature.GRASS.to_feature_vector(diamond)
         rock = MapFeature.ROCK.to_feature_vector(diamond)
-        water = MapFeature.ROCK.to_feature_vector(diamond)
+        water = MapFeature.WATER.to_feature_vector(diamond)
 
         return np.concatenate((grass, rock, water))
 
@@ -61,9 +61,6 @@ class DeepCow(SimpleCow):
         if self.energy > MAX_ENERGY:
             return Action.SPLIT
 
-        self.prev_state = self.state
-        self.prev_reward = self.reward
-        self.prev_action_idx = self.action_idx
         self.state = self.to_internal_state(observation)
         if not DeepCow.agent:
             DeepCow.agent = DQNAgent.from_dimensions(
@@ -72,13 +69,16 @@ class DeepCow(SimpleCow):
         self.action_idx = DeepCow.agent.act(self.state)
         return Action(self.action_idx + 1)
 
-    def learn(self, reward, done):
+    def learn(self, reward):
         self.reward = reward
         if self.prev_state is not None and self.state is not None:
             DeepCow.agent.remember(
                 self.prev_state, self.prev_action_idx, self.prev_reward, self.state
             )
             DeepCow.agent.replay()
+        self.prev_state = self.state
+        self.prev_reward = self.reward
+        self.prev_action_idx = self.action_idx
 
     @classmethod
     def restore_state(cls, settings):
