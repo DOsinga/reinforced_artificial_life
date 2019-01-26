@@ -60,7 +60,6 @@ class DeepCow(SimpleCow):
     def step(self, observation):
         if self.energy > MAX_ENERGY:
             return Action.SPLIT
-
         self.state = self.to_internal_state(observation)
         if not DeepCow.agent:
             DeepCow.agent = DQNAgent.from_dimensions(

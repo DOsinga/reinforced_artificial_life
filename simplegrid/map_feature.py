@@ -8,7 +8,7 @@ class MapFeature(Enum):
     EMPTY = 0, '.', (0, 0, 0)
     GRASS = -1, '#', (20, 240, 20)
     ROCK = -2, '*', (128, 128, 128)
-    WATER = -3, '~', (0, 0, 255)
+    WATER = -3, '~', (20, 20, 240)
 
     def __new__(cls, value, char, color):
         """Yes, this is the official way to overload an Enum."""
@@ -17,6 +17,10 @@ class MapFeature(Enum):
         obj.index = value
         obj.char = char
         obj.color = color
+        if value in (-2, -3):
+            obj.padding = 0
+        else:
+            obj.padding = .1
         if not hasattr(cls, 'registry'):
             cls.registry = {}
         cls.registry[obj.char] = obj

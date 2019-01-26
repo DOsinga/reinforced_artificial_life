@@ -163,7 +163,7 @@ class World:
             for y in range(self.size):
                 idx = self.cells[x, y]
                 if idx < 0:
-                    display.rectangle(x, y, 1, MapFeature(idx).color, padding=0.1)
+                    display.rectangle(x, y, 1, MapFeature(idx).color, MapFeature(idx).padding)
                     if idx == MapFeature.GRASS.index:
                         grass_count += 1
                 elif idx > 0:
@@ -200,30 +200,35 @@ class World:
                     break
         else:
             # Move
+            creature.energy -= self.settings.move_cost
+
+            # Empty the current cell
             self.set_cell(creature.x, creature.y, 0)
+
+            # Calculate new creature position
             x, y = self.apply_direction(action, creature.x, creature.y)
+
+            # Only perform the actual move if new cell is empty or grass
             if self.cells[x, y] in (MapFeature.GRASS.index, MapFeature.EMPTY.index):
+                creature.x = x
+                creature.y = y
+                self.set_cell(x, y, creature.id)
                 if self.cells[x, y] == MapFeature.GRASS.index:
                     reward += 1
                     creature.energy += self.settings.grass_energy
-                creature.x = x
-                creature.y = y
-            self.set_cell(creature.x, creature.y, creature.id)
-            creature.energy -= self.settings.move_cost
-            if self.cells[x, y] == MapFeature.WATER.index:
-                reward = -creature.energy
+            elif self.cells[x, y] == MapFeature.WATER.index:
+                reward = -creature.energy / self.settings.grass_energy
                 creature.energy = 0
-        done = creature.energy < self.settings.min_energy
+        #done = creature.energy < self.settings.min_energy
 
-        creature_energy = creature.energy
-        if done:
-            creature_energy = 0
+        #if done:
+        #    creature_energy = 0
         creature_type = None
         if new_creature:
             creature_type = type(creature).__name__
-        self.episode.creature_change(creature.id, creature_energy, creature_type)
+        self.episode.creature_change(creature.id, creature.energy, creature_type)
 
-        return new_creature, reward, done
+        return new_creature, reward, creature.energy < self.settings.min_energy
 
     def print(self):
         """Prints the current screen as ascii chars to the console. Convenient for debugging."""
