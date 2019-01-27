@@ -5,7 +5,7 @@ from collections import Counter, defaultdict, deque
 
 import numpy as np
 
-from simplegrid.cow import Action, SmartCow
+from simplegrid.cow import Action, SmartCow, GreedyCow
 from simplegrid.deep_cow import DeepCow
 from simplegrid.map_feature import MapFeature
 
@@ -57,20 +57,15 @@ class World:
 
         for _ in range(self.settings.start_num_creatures):
             x, y = self.free_spot()
-            self.add_new_creature(SmartCow(x, y, self.settings))
+            self.add_new_creature(GreedyCow(x, y, self.settings))
             x, y = self.free_spot()
             self.add_new_creature(DeepCow(x, y, self.settings))
 
-        if DeepCow.agent:
-            np.set_printoptions(precision=2, suppress=True)
-            # print('\nIdentity test at generation start:')
-            # print(DeepCow.agent.identity_test())
-            if self.settings.show_weights:
-                DeepCow.agent.show_weights()
-
-    def end(self):
+    def end(self, show_weights=False):
         self.episode.save(self.settings)
         DeepCow.save_state(self.settings)
+        if show_weights:
+            DeepCow.agent.show_weights()
 
     def set_cell(self, x, y, value):
         self.cells[x, y] = value
@@ -93,8 +88,7 @@ class World:
         rolled = np.roll(self.cells, (size_2 - creature.x, size_2 - creature.y), (0, 1))
         view_distance = self.settings.view_distance
         return rolled[
-            size_2 - view_distance : size_2 + view_distance + 1,
-            size_2 - view_distance : size_2 + view_distance + 1,
+            size_2 - view_distance : size_2 + view_distance + 1, size_2 - view_distance : size_2 + view_distance + 1
         ]
 
     def step(self):
@@ -111,11 +105,9 @@ class World:
             observation = self.get_observation(creature)
             action = creature.step(observation)
             new_creature, reward, done = self.process_action(creature, action)
-            creature.learn(reward)
+            creature.learn(reward, done)
 
             if done:
-                # Learn one last harsh lesson
-                creature.learn(reward)
                 dead.add(creature)
             if new_creature:
                 born.append(new_creature)
@@ -190,8 +182,8 @@ class World:
         if action == Action.NONE:
             creature.energy -= self.settings.idle_cost
         elif action == Action.SPLIT:
-            # Split, try to find an empty spot
-            options = list(Action)[1:-1]  #
+            # Try to find an empty spot
+            options = list(Action)[1:-1]
             random.shuffle(options)
             for option in options:
                 x, y = self.apply_direction(option, creature.x, creature.y)
@@ -199,36 +191,32 @@ class World:
                     new_creature = creature.split()
                     break
         else:
-            # Move
-            creature.energy -= self.settings.move_cost
-
-            # Empty the current cell
             self.set_cell(creature.x, creature.y, 0)
-
-            # Calculate new creature position
             x, y = self.apply_direction(action, creature.x, creature.y)
-
-            # Only perform the actual move if new cell is empty or grass
             if self.cells[x, y] in (MapFeature.GRASS.index, MapFeature.EMPTY.index):
-                creature.x = x
-                creature.y = y
-                self.set_cell(x, y, creature.id)
                 if self.cells[x, y] == MapFeature.GRASS.index:
                     reward += 1
                     creature.energy += self.settings.grass_energy
-            elif self.cells[x, y] == MapFeature.WATER.index:
+                creature.x = x
+                creature.y = y
+            self.set_cell(creature.x, creature.y, creature.id)
+            creature.energy -= self.settings.move_cost
+
+            if self.cells[x, y] == MapFeature.WATER.index:
                 reward = -creature.energy / self.settings.grass_energy
                 creature.energy = 0
-        #done = creature.energy < self.settings.min_energy
 
-        #if done:
-        #    creature_energy = 0
+        done = creature.energy < self.settings.min_energy
+
+        creature_energy = creature.energy
+        if done:
+            creature_energy = 0
         creature_type = None
         if new_creature:
             creature_type = type(creature).__name__
-        self.episode.creature_change(creature.id, creature.energy, creature_type)
+        self.episode.creature_change(creature.id, creature_energy, creature_type)
 
-        return new_creature, reward, creature.energy < self.settings.min_energy
+        return new_creature, reward, done
 
     def print(self):
         """Prints the current screen as ascii chars to the console. Convenient for debugging."""

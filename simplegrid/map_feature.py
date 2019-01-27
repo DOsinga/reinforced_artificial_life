@@ -20,7 +20,7 @@ class MapFeature(Enum):
         if value in (-2, -3):
             obj.padding = 0
         else:
-            obj.padding = .1
+            obj.padding = 0.1
         if not hasattr(cls, 'registry'):
             cls.registry = {}
         cls.registry[obj.char] = obj
@@ -33,9 +33,7 @@ class MapFeature(Enum):
     @classmethod
     def text_scene_to_environment(cls, text_scene):
         text_scene = text_scene.strip()
-        return np.asarray(
-            [[cls.from_char(char).index for char in line] for line in text_scene.split('\n')]
-        ).T
+        return np.asarray([[cls.from_char(char).index for char in line] for line in text_scene.split('\n')]).T
 
     def to_feature_vector(self, vector):
         """Convert the vector to a feature vector.

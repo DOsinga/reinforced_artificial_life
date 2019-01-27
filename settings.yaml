@@ -7,7 +7,8 @@ batch_size: 32
 
 start_num_creatures: 6
 start_grass_fraction: 0.3
-start_rock_fraction: 0.05
+start_rock_fraction: 0.02
+start_water_fraction: 0.01
 grass_grow_per_turn: 3
 world_size: 60
 scale: 10

@@ -1,6 +1,6 @@
 import os
 
-from simplegrid.cow import SimpleCow, Action, MAX_ENERGY
+from simplegrid.cow import AbstractCow, Action, MAX_ENERGY
 from simplegrid.dqn_agent import DQNAgent
 
 import numpy as np
@@ -10,16 +10,14 @@ from simplegrid.map_feature import MapFeature
 HISTORY_FILE = 'deep_cow_history.jsonl'
 WEIGHTS_FILE = 'deep_cow_model_weights.h5'
 MODEL_FILE = 'deep_cow_model.json'
-YELLOW = (255, 255, 0)
 
 
-class DeepCow(SimpleCow):
+class DeepCow(AbstractCow):
     agent = None
+    COLOR = (240, 240, 20)
 
     def __init__(self, x, y, settings, energy=None):
         super().__init__(x, y, settings, energy)
-        self.settings = settings
-        self.color = YELLOW
         self.prev_state = None
         self.prev_reward = None
         self.prev_action_idx = None
@@ -60,24 +58,26 @@ class DeepCow(SimpleCow):
     def step(self, observation):
         if self.energy > MAX_ENERGY:
             return Action.SPLIT
+
         self.state = self.to_internal_state(observation)
         if not DeepCow.agent:
-            DeepCow.agent = DQNAgent.from_dimensions(
-                len(self.state), layers=self.settings.layers, action_size=4
-            )
+            DeepCow.agent = DQNAgent.from_dimensions(len(self.state), layers=self.settings.layers, action_size=4)
         self.action_idx = DeepCow.agent.act(self.state)
         return Action(self.action_idx + 1)
 
-    def learn(self, reward):
+    def learn(self, reward, done):
         self.reward = reward
         if self.prev_state is not None and self.state is not None:
-            DeepCow.agent.remember(
-                self.prev_state, self.prev_action_idx, self.prev_reward, self.state
-            )
+            DeepCow.agent.remember(self.prev_state, self.prev_action_idx, self.prev_reward, self.state)
             DeepCow.agent.replay()
-        self.prev_state = self.state
-        self.prev_reward = self.reward
-        self.prev_action_idx = self.action_idx
+        if done:
+            # Learn one last harsh lesson
+            DeepCow.agent.remember(self.state, self.action_idx, self.reward, None)
+            DeepCow.agent.replay()
+        else:
+            self.prev_state = self.state
+            self.prev_reward = self.reward
+            self.prev_action_idx = self.action_idx
 
     @classmethod
     def restore_state(cls, settings):

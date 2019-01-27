@@ -18,7 +18,7 @@ class DQNAgent:
         self.memory = deque(maxlen=25000)
         self.gamma = 0.25  # discount rate
         self.epsilon = epsilon
-        self.epsilon_min = 0.01
+        self.epsilon_min = 0.04
         self.epsilon_decay = 0.995
         self.learning_rate = 0.001
         self.batch_size = 32
@@ -93,9 +93,7 @@ class DQNAgent:
         # Predict q_values in batches for efficiency
         none_state = np.zeros(self.input_size)  # Used in place of None for next_state
         states = np.array([sample[0] for sample in batch])
-        next_states = np.array(
-            [(none_state if sample[3] is None else sample[3]) for sample in batch]
-        )
+        next_states = np.array([(none_state if sample[3] is None else sample[3]) for sample in batch])
         q_values = self.model.predict(states)
         q_values_next = self.model.predict(next_states)
 
@@ -114,7 +112,7 @@ class DQNAgent:
             y[i] = target
 
         self.model.fit(X, y, verbose=0)
-        self.epsilon = min(self.epsilon_decay * self.epsilon, self.epsilon_min)
+        self.epsilon = max(self.epsilon_decay * self.epsilon, self.epsilon_min)
 
     def identity_test(self):
         """Run the network over inputs with each exactly one cell set to one."""
@@ -139,14 +137,9 @@ class DQNAgent:
         with open(name, 'w') as fout:
             for state, action, reward, next_state in self.memory:
                 state = [float(x) for x in state]
-                if next is not None:
+                if next_state is not None and next is not None:
                     next_state = [float(x) for x in next_state]
-                record = {
-                    'state': state,
-                    'action': int(action),
-                    'reward': float(reward),
-                    'next_state': next_state,
-                }
+                record = {'state': state, 'action': int(action), 'reward': float(reward), 'next_state': next_state}
                 fout.write(json.dumps(record) + '\n')
 
     def save_model(self, name):

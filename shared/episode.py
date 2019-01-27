@@ -29,11 +29,7 @@ class Episode:
         path = settings.get_path('episodes.jsonl')
         if path:
             with open(path, 'w') as f:
-                f.write(
-                    '\n'.join(
-                        [json.dumps(frame, default=fallback_to_int) for frame in self.frames]
-                    )
-                )
+                f.write('\n'.join([json.dumps(frame, default=fallback_to_int) for frame in self.frames]))
 
 
 def fallback_to_int(o):
