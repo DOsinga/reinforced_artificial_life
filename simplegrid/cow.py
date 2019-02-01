@@ -141,7 +141,7 @@ class SmartCow(SimpleCow):
                         reward = 1
                     elif value == MapFeature.ROCK.index:
                         reward = -1
-                    elif value == MapFeature.CREATURE.index:
+                    elif value == MapFeature.OTHER_CREATURE.index or value == MapFeature.SAME_CREATURE.index:
                         reward = -0.5
                     else:
                         continue

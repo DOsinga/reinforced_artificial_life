@@ -86,10 +86,21 @@ class World:
         size_2 = self.size // 2
         rolled = np.roll(self.cells, (size_2 - creature.x, size_2 - creature.y), (0, 1))
         view_distance = self.settings.view_distance
-        return rolled[
+        res = rolled[
             size_2 - view_distance : size_2 + view_distance + 1,
             size_2 - view_distance : size_2 + view_distance + 1,
         ]
+        w, h = res.shape
+        for x in range(w):
+            for y in range(h):
+                v = res[x][y]
+                if v > 0:
+                    if creature.__class__ == self.creatures[v].__class__:
+                        v = MapFeature.SAME_CREATURE.index
+                    else:
+                        v = MapFeature.OTHER_CREATURE.index
+                res[x][y] = v
+        return res
 
     def step(self):
         self.steps += 1

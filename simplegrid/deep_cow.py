@@ -53,8 +53,10 @@ class DeepCow(SimpleCow):
 
         grass = MapFeature.GRASS.to_feature_vector(diamond)
         rock = MapFeature.ROCK.to_feature_vector(diamond)
+        same = MapFeature.SAME_CREATURE.to_feature_vector(diamond)
+        other = MapFeature.OTHER_CREATURE.to_feature_vector(diamond)
 
-        return np.concatenate((grass, rock))
+        return np.concatenate((grass, rock, same, other))
 
     def step(self, observation):
         if self.energy > MAX_ENERGY:
