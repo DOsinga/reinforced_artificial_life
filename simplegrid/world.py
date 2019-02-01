@@ -61,18 +61,8 @@ class World:
             x, y = self.free_spot()
             self.add_new_creature(DeepCow(x, y, self.settings))
 
-<<<<<<< HEAD
-    def end(self, show_weights=False):
-=======
-        if DeepCow.agent:
-            np.set_printoptions(precision=2, suppress=True)
-            # print('\nIdentity test at generation start:')
-            # print(DeepCow.agent.identity_test())
-            if self.settings.show_weights:
-                DeepCow.agent.show_weights()
 
-    def end(self):
->>>>>>> 3b6c1ac... Implemented water
+    def end(self, show_weights=False):
         self.episode.save(self.settings)
         DeepCow.save_state(self.settings)
         if show_weights:
@@ -194,13 +184,8 @@ class World:
         if action == Action.NONE:
             creature.energy -= self.settings.idle_cost
         elif action == Action.SPLIT:
-<<<<<<< HEAD
-            # Try to find an empty spot
-            options = list(Action)[1:-1]
-=======
             # Split, try to find an empty spot
-            options = list(Action)[1:-1]  #
->>>>>>> 3b6c1ac... Implemented water
+            options = list(Action)[1:-1]
             random.shuffle(options)
             for option in options:
                 x, y = self.apply_direction(option, creature.x, creature.y)
