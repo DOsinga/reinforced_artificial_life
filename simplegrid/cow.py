@@ -8,6 +8,7 @@ from simplegrid.map_feature import MapFeature
 
 MAX_ENERGY = 1000
 
+
 class Action(IntEnum):
     NONE = 0
     UP = 1
@@ -61,7 +62,10 @@ class AbstractCow(abc.ABC):
 
     def draw(self, display):
         display.circle(
-            self.x, self.y, math.sqrt(min(0.64, 2 * self.energy / MAX_ENERGY)), self.__class__.COLOR
+            self.x,
+            self.y,
+            math.sqrt(min(0.64, 2 * self.energy / MAX_ENERGY)),
+            self.__class__.COLOR,
         )
 
     def split(self):

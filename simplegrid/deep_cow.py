@@ -54,14 +54,17 @@ class DeepCow(AbstractCow):
 
         return np.concatenate((grass, rock))
 
-    def step(self, observation):
+    def step(self, observation, state=None):
         if self.energy > MAX_ENERGY:
             return Action.SPLIT
 
         self.prev_state = self.state
         self.prev_reward = self.reward
         self.prev_action_idx = self.action_idx
-        self.state = self.to_internal_state(observation)
+        if state is None:
+            self.state = self.to_internal_state(observation)
+        else:
+            self.state = state
         if not DeepCow.agent:
             DeepCow.agent = DQNAgent.from_dimensions(
                 len(self.state), layers=self.settings.layers, action_size=4

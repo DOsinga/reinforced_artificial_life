@@ -126,7 +126,9 @@ if __name__ == '__main__':
 
     correct = 0
     for scenario_file in sorted(scenario_files):
-        correct += run_scenario(scenario_file, creature, fake_world, args.verbose, show_weights=args.show_weights)
+        correct += run_scenario(
+            scenario_file, creature, fake_world, args.verbose, show_weights=args.show_weights
+        )
 
     if len(scenario_files) > 1:
         percentage = 100 * correct / len(scenario_files)
