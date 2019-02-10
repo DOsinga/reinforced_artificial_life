@@ -8,6 +8,7 @@ class MapFeature(Enum):
     EMPTY = 0, '.', (0, 0, 0)
     GRASS = -1, '#', (20, 240, 20)
     ROCK = -2, '*', (128, 128, 128)
+    WATER = -3, '~', (0, 0, 255)
 
     def __new__(cls, value, char, color):
         """Yes, this is the official way to overload an Enum."""

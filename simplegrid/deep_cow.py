@@ -51,8 +51,9 @@ class DeepCow(AbstractCow):
 
         grass = MapFeature.GRASS.to_feature_vector(diamond)
         rock = MapFeature.ROCK.to_feature_vector(diamond)
+        water = MapFeature.ROCK.to_feature_vector(diamond)
 
-        return np.concatenate((grass, rock))
+        return np.concatenate((grass, rock, water))
 
     def step(self, observation):
         if self.energy > MAX_ENERGY:
@@ -76,6 +77,11 @@ class DeepCow(AbstractCow):
                 self.prev_state, self.prev_action_idx, self.prev_reward, self.state
             )
             DeepCow.agent.replay()
+        if done:
+            DeepCow.agent.remember(
+                self.state, self.action_idx, self.reward, None
+            )
+
 
     @classmethod
     def restore_state(cls, settings):
