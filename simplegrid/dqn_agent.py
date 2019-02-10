@@ -99,22 +99,26 @@ class DQNAgent:
         q_values = self.model.predict(states)
         q_values_next = self.model.predict(next_states)
 
+        loss = 0.0
+
         # Fill in our training batch
         X = np.zeros((batch_size, self.input_size))
         y = np.zeros((batch_size, self.output_size))
         for i in range(batch_size):
             state, action, reward, next_state = batch[i]
             # Important : target is the q_value itself for all actions except the one actually taken
+            if next_state is not None:
+                reward += self.gamma * np.amax(q_values_next[i])
             target = q_values[i]
-            if next_state is None:
-                target[action] = reward
-            else:
-                target[action] = reward + self.gamma * np.amax(q_values_next[i])
+            loss += abs(target[action] - reward)
+            target[action] = reward
             X[i] = state
             y[i] = target
 
         self.model.fit(X, y, verbose=0)
         self.epsilon = min(self.epsilon_decay * self.epsilon, self.epsilon_min)
+
+        return loss / batch_size
 
     def identity_test(self):
         """Run the network over inputs with each exactly one cell set to one."""
