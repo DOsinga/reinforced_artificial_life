@@ -15,13 +15,13 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 class DQNAgent:
     def __init__(self, model, epsilon):
         """Create an agent using a model. Typically you want to call either from_stored_model or from_dimensions."""
-        self.memory = deque(maxlen=25000)
-        self.gamma = 0.25  # discount rate
+        self.memory = deque(maxlen=250000)
+        self.gamma = 0.5  # discount rate
         self.epsilon = epsilon
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
         self.learning_rate = 0.001
-        self.batch_size = 32
+        self.batch_size = 64
         model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
         self.model = model
         self.input_size = int(self.model.input.shape[-1])
@@ -143,7 +143,7 @@ class DQNAgent:
         with open(name, 'w') as fout:
             for state, action, reward, next_state in self.memory:
                 state = [float(x) for x in state]
-                if next is not None:
+                if next_state is not None:
                     next_state = [float(x) for x in next_state]
                 record = {
                     'state': state,
