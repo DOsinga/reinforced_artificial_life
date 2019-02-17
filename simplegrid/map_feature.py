@@ -30,9 +30,7 @@ class MapFeature(Enum):
     @classmethod
     def text_scene_to_environment(cls, text_scene):
         text_scene = text_scene.strip()
-        return np.asarray(
-            [[cls.from_char(char).index for char in line] for line in text_scene.split('\n')]
-        ).T
+        return np.asarray([[cls.from_char(char).index for char in line] for line in text_scene.split('\n')]).T
 
     def __int__(self):
         return self.value

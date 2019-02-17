@@ -93,9 +93,7 @@ class DQNAgent:
         # Predict q_values in batches for efficiency
         none_state = np.zeros(self.input_size)  # Used in place of None for next_state
         states = np.array([sample[0] for sample in batch])
-        next_states = np.array(
-            [(none_state if sample[3] is None else sample[3]) for sample in batch]
-        )
+        next_states = np.array([(none_state if sample[3] is None else sample[3]) for sample in batch])
         q_values = self.model.predict(states)
         q_values_next = self.model.predict(next_states)
 
@@ -138,18 +136,11 @@ class DQNAgent:
     def save_history(self, name):
         with open(name, 'w') as fout:
             for state, action, reward, next_state in self.memory:
-                if (
-                    next_state is not None
-                ):  # Added but not sure why this was not needed in the first place
+                if next_state is not None:  # Added but not sure why this was not needed in the first place
                     state = [float(x) for x in state]
                     if next is not None:
                         next_state = [float(x) for x in next_state]
-                    record = {
-                        'state': state,
-                        'action': int(action),
-                        'reward': float(reward),
-                        'next_state': next_state,
-                    }
+                    record = {'state': state, 'action': int(action), 'reward': float(reward), 'next_state': next_state}
                     fout.write(json.dumps(record) + '\n')
 
     def save_model(self, name):

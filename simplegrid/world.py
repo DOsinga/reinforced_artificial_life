@@ -5,7 +5,8 @@ from collections import Counter, defaultdict, deque
 
 import numpy as np
 
-from simplegrid.cow import Action, SmartCow
+from simplegrid.cow import SmartCow
+from simplegrid.abstractcreature import Action
 from simplegrid.deep_cow import DeepCow
 from simplegrid.wolf import Wolf
 from simplegrid.map_feature import MapFeature
@@ -94,15 +95,12 @@ class World:
         rolled = np.roll(self.cells, (size_2 - creature.x, size_2 - creature.y), (0, 1))
         view_distance = self.settings.view_distance
         observation = rolled[
-            size_2 - view_distance : size_2 + view_distance + 1,
-            size_2 - view_distance : size_2 + view_distance + 1,
+            size_2 - view_distance : size_2 + view_distance + 1, size_2 - view_distance : size_2 + view_distance + 1
         ]
         for x in range(observation.shape[0]):
             for y in range(observation.shape[0]):
                 if observation[x, y] > 0:
-                    observation[x, y] = (
-                        self.creatures[observation[x, y]].__class__.IS_PREDATOR and 2 or 1
-                    )
+                    observation[x, y] = self.creatures[observation[x, y]].__class__.IS_PREDATOR and 2 or 1
         return observation
 
     def step(self):
@@ -151,9 +149,7 @@ class World:
 
         self.episode.next_frame()
         self.counts = Counter(
-            creature.__class__.__name__
-            for creature in self.creatures.values()
-            if not creature.__class__.IS_PREDATOR
+            creature.__class__.__name__ for creature in self.creatures.values() if not creature.__class__.IS_PREDATOR
         )
 
         if not len(self.counts) == 2:

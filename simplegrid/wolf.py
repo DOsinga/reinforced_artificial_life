@@ -1,7 +1,7 @@
 import random
 import operator
 
-from simplegrid.cow import AbstractCreature, Action, MAX_ENERGY
+from simplegrid.abstractcreature import MAX_ENERGY, Action, AbstractCreature
 from simplegrid.map_feature import MapFeature
 
 WOLF_MOVE_SPEED = 0.5
