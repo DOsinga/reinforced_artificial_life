@@ -10,6 +10,7 @@ from simplegrid.deep_cow import DeepCow
 from simplegrid.wolf import Wolf
 from simplegrid.map_feature import MapFeature
 
+
 class World:
     def __init__(self, settings, display):
         self.counts = {}
@@ -96,10 +97,12 @@ class World:
             size_2 - view_distance : size_2 + view_distance + 1,
             size_2 - view_distance : size_2 + view_distance + 1,
         ]
-        for x in range( observation.shape[0] ):
-            for y in range( observation.shape[0] ):
-                if observation[x,y] > 0:
-                    observation[x,y] = self.creatures[observation[x,y]].__class__.IS_PREDATOR and 2 or 1
+        for x in range(observation.shape[0]):
+            for y in range(observation.shape[0]):
+                if observation[x, y] > 0:
+                    observation[x, y] = (
+                        self.creatures[observation[x, y]].__class__.IS_PREDATOR and 2 or 1
+                    )
         return observation
 
     def step(self):
@@ -147,7 +150,11 @@ class World:
                 self.set_cell(x, y, MapFeature.GRASS.index)
 
         self.episode.next_frame()
-        self.counts = Counter(creature.__class__.__name__ for creature in self.creatures.values() if not creature.__class__.IS_PREDATOR)
+        self.counts = Counter(
+            creature.__class__.__name__
+            for creature in self.creatures.values()
+            if not creature.__class__.IS_PREDATOR
+        )
 
         if not len(self.counts) == 2:
             return self.end_of_episode()
@@ -182,6 +189,7 @@ class World:
             display.sidebar[k + ' energy'] = int(self.energies[k])
         display.sidebar['born'] = self.num_creatures_born
         display.sidebar['eaten'] = self.num_creatures_eaten
+
     def get_info(self):
         return ' '.join(k + ': ' + str(v) for k, v in self.counts.items())
 
