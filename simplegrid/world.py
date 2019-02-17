@@ -10,7 +10,6 @@ from simplegrid.deep_cow import DeepCow
 from simplegrid.wolf import Wolf
 from simplegrid.map_feature import MapFeature
 
-
 class World:
     def __init__(self, settings, display):
         self.counts = {}
@@ -40,6 +39,8 @@ class World:
         self.creatures = {}
         self.cells.fill(0)
         self.steps = 0
+        self.num_creatures_born = 0
+        self.num_creatures_eaten = 0
         c = self.size * self.size
         grass_count = int(c * grass_fraction)
         rock_count = int(c * rock_fraction)
@@ -61,8 +62,9 @@ class World:
             self.add_new_creature(SmartCow(x, y, self.settings))
             x, y = self.free_spot()
             self.add_new_creature(DeepCow(x, y, self.settings))
+        for _ in range(self.settings.start_num_wolves):
             x, y = self.free_spot()
-        self.add_new_creature(Wolf(x, y, self.settings))
+            self.add_new_creature(Wolf(x, y, self.settings))
 
     def end(self, show_weights=False):
         self.episode.save(self.settings)
@@ -90,10 +92,15 @@ class World:
         size_2 = self.size // 2
         rolled = np.roll(self.cells, (size_2 - creature.x, size_2 - creature.y), (0, 1))
         view_distance = self.settings.view_distance
-        return rolled[
+        observation = rolled[
             size_2 - view_distance : size_2 + view_distance + 1,
             size_2 - view_distance : size_2 + view_distance + 1,
         ]
+        for x in range( observation.shape[0] ):
+            for y in range( observation.shape[0] ):
+                if observation[x,y] > 0:
+                    observation[x,y] = self.creatures[observation[x,y]].__class__.IS_PREDATOR and 2 or 1
+        return observation
 
     def step(self):
         self.steps += 1
@@ -110,6 +117,7 @@ class World:
             action = creature.step(observation)
             new_creature, reward, done, victims = self.process_action(creature, action)
             dead.update(victims)
+            self.num_creatures_eaten += len(victims)
             creature.learn(reward, done)
 
             if done:
@@ -123,6 +131,7 @@ class World:
             self.set_cell(creature.x, creature.y, 0)
             del self.creatures[creature.id]
 
+        self.num_creatures_born += len(born)
         for creature in born:
             self.add_new_creature(creature)
 
@@ -138,9 +147,9 @@ class World:
                 self.set_cell(x, y, MapFeature.GRASS.index)
 
         self.episode.next_frame()
-        self.counts = Counter(creature.__class__.__name__ for creature in self.creatures.values())
+        self.counts = Counter(creature.__class__.__name__ for creature in self.creatures.values() if not creature.__class__.IS_PREDATOR)
 
-        if not len(self.counts) == 3:
+        if not len(self.counts) == 2:
             return self.end_of_episode()
         return True
 
@@ -171,7 +180,8 @@ class World:
         for k, v in self.counts.items():
             display.sidebar[k + 's'] = v
             display.sidebar[k + ' energy'] = int(self.energies[k])
-
+        display.sidebar['born'] = self.num_creatures_born
+        display.sidebar['eaten'] = self.num_creatures_eaten
     def get_info(self):
         return ' '.join(k + ': ' + str(v) for k, v in self.counts.items())
 

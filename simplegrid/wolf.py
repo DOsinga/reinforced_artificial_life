@@ -33,6 +33,8 @@ class Wolf(AbstractCreature):
                         reward = -1
                     elif value == MapFeature.COW.index:
                         reward = 10
+                    elif value == MapFeature.WOLF.index:
+                        reward = -100
                     else:
                         continue
                     reward /= dist * dist
