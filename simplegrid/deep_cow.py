@@ -1,10 +1,8 @@
 import os
-
-from simplegrid.cow import AbstractCow, Action, MAX_ENERGY
-from simplegrid.dqn_agent import DQNAgent
-
 import numpy as np
 
+from simplegrid.cow import AbstractCreature, Action, MAX_ENERGY
+from simplegrid.dqn_agent import DQNAgent
 from simplegrid.map_feature import MapFeature
 
 HISTORY_FILE = 'deep_cow_history.jsonl'
@@ -12,9 +10,10 @@ WEIGHTS_FILE = 'deep_cow_model_weights.h5'
 MODEL_FILE = 'deep_cow_model.json'
 
 
-class DeepCow(AbstractCow):
+class DeepCow(AbstractCreature):
     agent = None
     COLOR = (240, 240, 20)
+    IS_PREDATOR = False
 
     def __init__(self, x, y, settings, energy=None):
         super().__init__(x, y, settings, energy)
@@ -78,10 +77,7 @@ class DeepCow(AbstractCow):
             )
             DeepCow.agent.replay()
         if done:
-            DeepCow.agent.remember(
-                self.state, self.action_idx, self.reward, None
-            )
-
+            DeepCow.agent.remember(self.state, self.action_idx, self.reward, None)
 
     @classmethod
     def restore_state(cls, settings):

@@ -4,7 +4,7 @@ import numpy as np
 
 class MapFeature(Enum):
     # CREATURE is a place holder:
-    CREATURE = 1, '@', (240, 20, 20)
+    COW = 1, '@', (240, 20, 20)
     EMPTY = 0, '.', (0, 0, 0)
     GRASS = -1, '#', (20, 240, 20)
     ROCK = -2, '*', (128, 128, 128)
@@ -39,7 +39,7 @@ class MapFeature(Enum):
         Returns:
             A copy of vector where each entry is 1 if it matches self.index or 0 if not.
         """
-        if self == MapFeature.CREATURE:
+        if self == MapFeature.COW:
             raise ValueError('to_feature does not work for CREATURE')
         res = np.copy(vector).flatten()
         res[res != self.index] = 0

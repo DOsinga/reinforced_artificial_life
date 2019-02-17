@@ -7,6 +7,7 @@ import numpy as np
 
 from simplegrid.cow import Action, SmartCow
 from simplegrid.deep_cow import DeepCow
+from simplegrid.wolf import Wolf
 from simplegrid.map_feature import MapFeature
 
 
@@ -60,7 +61,8 @@ class World:
             self.add_new_creature(SmartCow(x, y, self.settings))
             x, y = self.free_spot()
             self.add_new_creature(DeepCow(x, y, self.settings))
-
+            x, y = self.free_spot()
+        self.add_new_creature(Wolf(x, y, self.settings))
 
     def end(self, show_weights=False):
         self.episode.save(self.settings)
@@ -106,7 +108,8 @@ class World:
 
             observation = self.get_observation(creature)
             action = creature.step(observation)
-            new_creature, reward, done = self.process_action(creature, action)
+            new_creature, reward, done, victims = self.process_action(creature, action)
+            dead.update(victims)
             creature.learn(reward, done)
 
             if done:
@@ -137,7 +140,7 @@ class World:
         self.episode.next_frame()
         self.counts = Counter(creature.__class__.__name__ for creature in self.creatures.values())
 
-        if not len(self.counts) == 2:
+        if not len(self.counts) == 3:
             return self.end_of_episode()
         return True
 
@@ -180,6 +183,7 @@ class World:
 
     def process_action(self, creature, action):
         new_creature = None
+        victims = set()
         reward = -self.settings.move_cost / self.settings.grass_energy
         if action == Action.NONE:
             creature.energy -= self.settings.idle_cost
@@ -196,7 +200,16 @@ class World:
             # Move
             self.set_cell(creature.x, creature.y, 0)
             x, y = self.apply_direction(action, creature.x, creature.y)
-            if self.cells[x, y] in (MapFeature.GRASS.index, MapFeature.EMPTY.index):
+            if creature.__class__.IS_PREDATOR:
+                if self.cells[x, y] > 0:
+                    # Attack
+                    victims.add(self.creatures[self.cells[x, y]])
+                    creature.x = x
+                    creature.y = y
+                elif self.cells[x, y] in (MapFeature.GRASS.index, MapFeature.EMPTY.index):
+                    creature.x = x
+                    creature.y = y
+            elif self.cells[x, y] in (MapFeature.GRASS.index, MapFeature.EMPTY.index):
                 if self.cells[x, y] == MapFeature.GRASS.index:
                     reward += 1
                     creature.energy += self.settings.grass_energy
@@ -206,7 +219,7 @@ class World:
             creature.energy -= self.settings.move_cost
             if self.cells[x, y] == MapFeature.WATER.index:
                 creature.energy = 0
-        done = creature.energy < self.settings.min_energy
+        done = not creature.__class__.IS_PREDATOR and creature.energy < self.settings.min_energy
 
         creature_energy = creature.energy
         if done:
@@ -216,7 +229,7 @@ class World:
             creature_type = type(creature).__name__
         self.episode.creature_change(creature.id, creature_energy, creature_type)
 
-        return new_creature, reward, done
+        return new_creature, reward, done, victims
 
     def print(self):
         """Prints the current screen as ascii chars to the console. Convenient for debugging."""

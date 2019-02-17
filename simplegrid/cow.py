@@ -8,6 +8,7 @@ from simplegrid.map_feature import MapFeature
 
 MAX_ENERGY = 1000
 
+
 class Action(IntEnum):
     NONE = 0
     UP = 1
@@ -37,20 +38,21 @@ class Action(IntEnum):
         return direction[0] + offset, direction[1] + offset
 
 
-class AbstractCow(abc.ABC):
+class AbstractCreature(abc.ABC):
     id_count = 1
 
     def __init_subclass__(cls, **kwargs):
         if not hasattr(cls, 'COLOR'):
-            raise TypeError('Cows need to declare their color')
+            raise TypeError('Creatures need to declare their color')
 
     def __init__(self, x, y, settings, energy=None):
         self.x = x
         self.y = y
         self.settings = settings
         self.energy = energy or settings.init_energy
-        self.id = AbstractCow.id_count
-        AbstractCow.id_count += 1
+        self.id = AbstractCreature.id_count
+        self.is_predator = 0
+        AbstractCreature.id_count += 1
 
     @abc.abstractmethod
     def step(self, observation):
@@ -61,7 +63,10 @@ class AbstractCow(abc.ABC):
 
     def draw(self, display):
         display.circle(
-            self.x, self.y, math.sqrt(min(0.64, 2 * self.energy / MAX_ENERGY)), self.__class__.COLOR
+            self.x,
+            self.y,
+            math.sqrt(min(0.64, 2 * self.energy / MAX_ENERGY)),
+            self.__class__.COLOR,
         )
 
     def split(self):
@@ -73,9 +78,10 @@ class AbstractCow(abc.ABC):
         return '\%s:%02d/' % (self.__class__.__name__, self.id)
 
 
-class SimpleCow(AbstractCow):
+class SimpleCow(AbstractCreature):
 
     COLOR = (120, 240, 20)
+    IS_PREDATOR = False
 
     def step(self, observation):
         if self.energy > MAX_ENERGY:
@@ -84,9 +90,10 @@ class SimpleCow(AbstractCow):
         return random.choice(list(Action)[1:-1])
 
 
-class GreedyCow(AbstractCow):
+class GreedyCow(AbstractCreature):
 
     COLOR = (240, 20, 20)
+    IS_PREDATOR = False
 
     def step(self, observation):
 
@@ -108,6 +115,7 @@ class GreedyCow(AbstractCow):
 class SmartCow(SimpleCow):
 
     COLOR = (240, 120, 20)
+    IS_PREDATOR = False
 
     def step(self, observation):
 
@@ -129,7 +137,7 @@ class SmartCow(SimpleCow):
                         reward = 1
                     elif value == MapFeature.ROCK.index:
                         reward = -1
-                    elif value == MapFeature.CREATURE.index:
+                    elif value == MapFeature.COW.index:
                         reward = -0.5
                     else:
                         continue
