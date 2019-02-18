@@ -1,6 +1,6 @@
 min_energy: 5
 init_energy: 100
-grass_energy: 15
+grass_energy: 5
 idle_cost: 1
 move_cost: 2
 batch_size: 32
