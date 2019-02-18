@@ -8,7 +8,6 @@ from simplegrid.map_feature import MapFeature
 class SimpleCow(AbstractCreature):
 
     COLOR = (120, 240, 20)
-    IS_PREDATOR = False
 
     def step(self, observation):
         if self.energy > MAX_ENERGY:
@@ -20,7 +19,6 @@ class SimpleCow(AbstractCreature):
 class GreedyCow(AbstractCreature):
 
     COLOR = (240, 20, 20)
-    IS_PREDATOR = False
 
     def step(self, observation):
 
@@ -40,7 +38,6 @@ class GreedyCow(AbstractCreature):
 class SmartCow(SimpleCow):
 
     COLOR = (240, 120, 20)
-    IS_PREDATOR = False
 
     def step(self, observation):
 

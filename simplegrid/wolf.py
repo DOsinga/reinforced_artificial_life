@@ -10,7 +10,10 @@ WOLF_MOVE_SPEED = 0.5
 class Wolf(AbstractCreature):
 
     COLOR = (101, 67, 33)
-    IS_PREDATOR = True
+
+    @staticmethod
+    def is_predator():
+        return True
 
     def step(self, observation):
         self.energy = MAX_ENERGY

@@ -44,6 +44,10 @@ class AbstractCreature(abc.ABC):
         self.id = AbstractCreature.id_count
         AbstractCreature.id_count += 1
 
+    @staticmethod
+    def is_predator():
+        return False
+
     @abc.abstractmethod
     def step(self, observation):
         pass

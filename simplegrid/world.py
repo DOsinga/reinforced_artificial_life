@@ -102,7 +102,7 @@ class World:
                 if observation[x, y] > 0:
                     observation[x, y] = (
                         MapFeature.WOLF.value
-                        if self.creatures[observation[x, y]].__class__.IS_PREDATOR
+                        if self.creatures[observation[x, y]].is_predator()
                         else MapFeature.COW.value
                     )
         return observation
@@ -153,7 +153,7 @@ class World:
 
         self.episode.next_frame()
         self.counts = Counter(
-            creature.__class__.__name__ for creature in self.creatures.values() if not creature.__class__.IS_PREDATOR
+            creature.__class__.__name__ for creature in self.creatures.values() if not creature.is_predator()
         )
 
         if not len(self.counts) == 2:
@@ -218,7 +218,7 @@ class World:
             # Move
             self.set_cell(creature.x, creature.y, 0)
             x, y = self.apply_direction(action, creature.x, creature.y)
-            if creature.__class__.IS_PREDATOR:
+            if creature.is_predator():
                 if self.cells[x, y] > 0:
                     # Attack
                     victims.add(self.creatures[self.cells[x, y]])
@@ -237,7 +237,7 @@ class World:
             creature.energy -= self.settings.move_cost
             if self.cells[x, y] == MapFeature.WATER.index:
                 creature.energy = 0
-        done = not creature.__class__.IS_PREDATOR and creature.energy < self.settings.min_energy
+        done = not creature.is_predator() and creature.energy < self.settings.min_energy
 
         creature_energy = creature.energy
         if done:
