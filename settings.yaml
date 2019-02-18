@@ -13,8 +13,8 @@ grass_grow_per_turn: 3
 world_size: 60
 scale: 10
 
-view_distance: 2
+view_distance: 3
 steps_per_episode: 1000
 
-layers: [24, 24]
+layers: [16, 16]
 

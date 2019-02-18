@@ -65,6 +65,7 @@ class World:
     def end(self, show_weights=False):
         self.episode.save(self.settings)
         DeepCow.save_state(self.settings)
+        print('deep-cow-loss:', DeepCow.agent.replay())
         if show_weights:
             DeepCow.agent.show_weights()
 
@@ -180,7 +181,7 @@ class World:
 
     def process_action(self, creature, action):
         new_creature = None
-        reward = -self.settings.move_cost / self.settings.grass_energy
+        reward = 0  # -self.settings.move_cost / self.settings.grass_energy
         if action == Action.NONE:
             creature.energy -= self.settings.idle_cost
         elif action == Action.SPLIT:
