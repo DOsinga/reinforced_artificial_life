@@ -31,6 +31,8 @@ class Wolf(AbstractCreature):
                 if 0 < dist <= view_distance:
                     if value == MapFeature.ROCK.index:
                         reward = -1
+                    elif value == MapFeature.WATER.index:
+                        reward = -100
                     elif value == MapFeature.COW.index:
                         reward = 10
                     elif value == MapFeature.WOLF.index:

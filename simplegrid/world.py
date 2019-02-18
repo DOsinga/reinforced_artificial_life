@@ -98,9 +98,13 @@ class World:
             size_2 - view_distance : size_2 + view_distance + 1, size_2 - view_distance : size_2 + view_distance + 1
         ]
         for x in range(observation.shape[0]):
-            for y in range(observation.shape[0]):
+            for y in range(observation.shape[1]):
                 if observation[x, y] > 0:
-                    observation[x, y] = self.creatures[observation[x, y]].__class__.IS_PREDATOR and 2 or 1
+                    observation[x, y] = (
+                        MapFeature.WOLF.value
+                        if self.creatures[observation[x, y]].__class__.IS_PREDATOR
+                        else MapFeature.COW.value
+                    )
         return observation
 
     def step(self):
