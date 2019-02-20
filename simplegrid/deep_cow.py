@@ -38,20 +38,18 @@ class DeepCow(AbstractCow):
         size = observation.shape[0]
 
         view_distance = size // 2
-        if view_distance == 1:
-            diamond = observation.flatten()
-            diamond = [diamond[3], diamond[7], diamond[5], diamond[1]]
-        else:
-            diamond = []
-            for x in range(size):
-                for y in range(size):
-                    if 0 < abs(x - size // 2) + abs(y - size // 2) <= view_distance:
-                        diamond.append(observation[x][y])
-        diamond = np.asarray(diamond)
+        grass_diamond = []
+        object_diamond = []
+        for x in range(size):
+            for y in range(size):
+                if 0 < abs(x - size // 2) + abs(y - size // 2) <= view_distance:
+                    object_diamond.append(observation[x][y][1])
+                    grass_diamond.append(observation[x][y][0])
+        object_diamond = np.asarray(object_diamond)
 
-        grass = MapFeature.GRASS.to_feature_vector(diamond)
-        rock = MapFeature.ROCK.to_feature_vector(diamond)
-        water = MapFeature.WATER.to_feature_vector(diamond)
+        grass = np.asarray(grass_diamond)
+        rock = MapFeature.ROCK.to_feature_vector(object_diamond)
+        water = MapFeature.WATER.to_feature_vector(object_diamond)
 
         return np.concatenate((grass, rock, water))
 
@@ -65,10 +63,10 @@ class DeepCow(AbstractCow):
         self.state = self.to_internal_state(observation)
         if not DeepCow.agent:
             DeepCow.agent = DQNAgent.from_dimensions(
-                len(self.state), layers=self.settings.layers, action_size=4
+                len(self.state), layers=self.settings.layers, action_size=5
             )
         self.action_idx = DeepCow.agent.act(self.state)
-        return Action(self.action_idx + 1)
+        return Action(self.action_idx)
 
     def learn(self, reward, done):
         self.reward = reward

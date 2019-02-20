@@ -6,7 +6,6 @@ class MapFeature(Enum):
     # CREATURE is a place holder:
     CREATURE = 1, '@', (240, 20, 20)
     EMPTY = 0, '.', (0, 0, 0)
-    GRASS = -1, '#', (20, 240, 20)
     ROCK = -2, '*', (128, 128, 128)
     WATER = -3, '~', (0, 0, 255)
 
