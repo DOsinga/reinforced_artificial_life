@@ -40,27 +40,29 @@ class SmartCow(SimpleCow):
     COLOR = (240, 120, 20)
 
     def step(self, observation):
-
         if self.energy > MAX_ENERGY:
             return Action.SPLIT
 
         size = observation.shape[0]
         view_distance = size // 2
-        possible_actions = {a: 0.0 for a in list(Action)[1:-1]}
+
+        # Initial value of a is to favor one direction a little more than others
+        # The random is to prevent creature from ending up in an oscillator
+        possible_actions = {a: (a + 2 * random.random()) / 100 for a in list(Action)[1:-1]}
 
         for col in range(size):
             x = col - view_distance
             for row in range(size):
                 y = row - view_distance
                 dist = abs(x) + abs(y)
-                value = observation[col, row]
                 if 0 < dist <= view_distance:
+                    value = observation[col, row]
                     if value == MapFeature.GRASS.index:
                         reward = 1
-                    elif value == MapFeature.ROCK.index:
+                    elif dist == 1 and value == MapFeature.ROCK.index:
                         reward = -1
                     elif value == MapFeature.COW.index:
-                        reward = -0.5
+                       reward = -0.5
                     else:
                         continue
                     reward /= dist * dist

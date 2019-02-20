@@ -71,6 +71,7 @@ class World:
     def end(self, show_weights=False):
         self.episode.save(self.settings)
         DeepCow.save_state(self.settings)
+        print('deep-cow-loss:', DeepCow.agent.replay())
         if show_weights:
             DeepCow.agent.show_weights()
 
