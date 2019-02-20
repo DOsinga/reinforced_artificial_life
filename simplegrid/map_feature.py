@@ -3,8 +3,9 @@ import numpy as np
 
 
 class MapFeature(Enum):
-    # CREATURE is a place holder:
-    CREATURE = 1, '@', (240, 20, 20)
+    # COW and WOLF are place holders:
+    WOLF = 2, 'W', (101, 67, 33)
+    COW = 1, '@', (240, 20, 20)
     EMPTY = 0, '.', (0, 0, 0)
     GRASS = -1, '#', (20, 240, 20)
     ROCK = -2, '*', (128, 128, 128)
@@ -29,9 +30,10 @@ class MapFeature(Enum):
     @classmethod
     def text_scene_to_environment(cls, text_scene):
         text_scene = text_scene.strip()
-        return np.asarray(
-            [[cls.from_char(char).index for char in line] for line in text_scene.split('\n')]
-        ).T
+        return np.asarray([[cls.from_char(char).index for char in line] for line in text_scene.split('\n')]).T
+
+    def __int__(self):
+        return self.value
 
     def to_feature_vector(self, vector):
         """Convert the vector to a feature vector.
@@ -39,8 +41,6 @@ class MapFeature(Enum):
         Returns:
             A copy of vector where each entry is 1 if it matches self.index or 0 if not.
         """
-        if self == MapFeature.CREATURE:
-            raise ValueError('to_feature does not work for CREATURE')
         res = np.copy(vector).flatten()
         res[res != self.index] = 0
         res[res == self.index] = 1

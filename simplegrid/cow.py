@@ -1,79 +1,11 @@
-import math
 import random
-from enum import IntEnum
 import operator
-import abc
 
+from simplegrid.abstractcreature import MAX_ENERGY, Action, AbstractCreature
 from simplegrid.map_feature import MapFeature
 
-MAX_ENERGY = 1000
 
-class Action(IntEnum):
-    NONE = 0
-    UP = 1
-    RIGHT = 2
-    DOWN = 3
-    LEFT = 4
-    SPLIT = 5
-
-    @classmethod
-    def from_letter(cls, letter):
-        number = 'URDL'.find(letter) + 1
-        return cls(number)
-
-    def __repr__(self):
-        return self.name
-
-    def to_direction(self):
-        return {
-            Action.UP: (0, -1),
-            Action.RIGHT: (1, 0),
-            Action.DOWN: (0, 1),
-            Action.LEFT: (-1, 0),
-        }[self]
-
-    def to_observation(self, offset):
-        direction = self.to_direction()
-        return direction[0] + offset, direction[1] + offset
-
-
-class AbstractCow(abc.ABC):
-    id_count = 1
-
-    def __init_subclass__(cls, **kwargs):
-        if not hasattr(cls, 'COLOR'):
-            raise TypeError('Cows need to declare their color')
-
-    def __init__(self, x, y, settings, energy=None):
-        self.x = x
-        self.y = y
-        self.settings = settings
-        self.energy = energy or settings.init_energy
-        self.id = AbstractCow.id_count
-        AbstractCow.id_count += 1
-
-    @abc.abstractmethod
-    def step(self, observation):
-        pass
-
-    def learn(self, reward, done):
-        pass
-
-    def draw(self, display):
-        display.circle(
-            self.x, self.y, math.sqrt(min(0.64, 2 * self.energy / MAX_ENERGY)), self.__class__.COLOR
-        )
-
-    def split(self):
-        new_creature = self.__class__(self.x, self.y, self.settings, self.energy / 2)
-        self.energy /= 2
-        return new_creature
-
-    def __repr__(self):
-        return '\%s:%02d/' % (self.__class__.__name__, self.id)
-
-
-class SimpleCow(AbstractCow):
+class SimpleCow(AbstractCreature):
 
     COLOR = (120, 240, 20)
 
@@ -84,7 +16,7 @@ class SimpleCow(AbstractCow):
         return random.choice(list(Action)[1:-1])
 
 
-class GreedyCow(AbstractCow):
+class GreedyCow(AbstractCreature):
 
     COLOR = (240, 20, 20)
 
@@ -95,9 +27,7 @@ class GreedyCow(AbstractCow):
 
         offset = observation.shape[0] // 2
         possible_actions = list(Action)[1:-1]
-        interesting_actions = [
-            a for a in possible_actions if observation[a.to_observation(offset)] == -1
-        ]
+        interesting_actions = [a for a in possible_actions if observation[a.to_observation(offset)] == -1]
 
         if interesting_actions:
             return random.choice(interesting_actions)
@@ -131,10 +61,8 @@ class SmartCow(SimpleCow):
                         reward = 1
                     elif dist == 1 and value == MapFeature.ROCK.index:
                         reward = -1
-                    elif dist == 1 and value == MapFeature.WATER.index:
-                        reward = -self.energy / self.settings.grass_energy
-                    elif value == MapFeature.CREATURE.index:
-                        reward = -0.5
+                    elif value == MapFeature.COW.index:
+                       reward = -0.5
                     else:
                         continue
                     reward /= dist * dist

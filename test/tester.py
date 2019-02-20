@@ -4,7 +4,8 @@ import os
 import argparse
 from unittest.mock import MagicMock
 
-from simplegrid.cow import Action, GreedyCow
+from simplegrid.cow import GreedyCow
+from simplegrid.abstractcreature import Action
 from simplegrid.deep_cow import DeepCow
 from shared.experiment_settings import ExperimentSettings
 from simplegrid.world import World, MapFeature
@@ -81,9 +82,7 @@ def parse_arguments():
         help='Specifies the test to run. This should be an existing '
         'file name in the tests directory without the path.',
     )
-    parser.add_argument(
-        '--verbose', dest='verbose', action='store_true', help='Pass verbose to see full output.'
-    )
+    parser.add_argument('--verbose', dest='verbose', action='store_true', help='Pass verbose to see full output.')
     parser.add_argument(
         '--terse',
         dest='verbose',
@@ -91,11 +90,7 @@ def parse_arguments():
         help='Pass terse to see output of only one line per test (this is the default).',
     )
     parser.add_argument(
-        '--showweights',
-        required=False,
-        dest='show_weights',
-        action='store_true',
-        help='Shows network weights.',
+        '--showweights', required=False, dest='show_weights', action='store_true', help='Shows network weights.'
     )
     return parser.parse_args()
 
