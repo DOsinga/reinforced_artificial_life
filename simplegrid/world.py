@@ -46,9 +46,7 @@ class World:
             for y in range(self.size):
                 self.cells[x, y, 0] = min(1.0, random.uniform(grass_fraction * 0.8, grass_fraction * 1.2))
 
-        for idx_choice, idx_val in enumerate(
-            np.random.choice(c, rock_count + water_count, replace=False)
-        ):
+        for idx_choice, idx_val in enumerate(np.random.choice(c, rock_count + water_count, replace=False)):
             if idx_choice <= rock_count:
                 celltype = MapFeature.ROCK
             else:
@@ -60,7 +58,6 @@ class World:
             self.add_new_creature(SmartCow(x, y, self.settings))
             x, y = self.free_spot()
             self.add_new_creature(DeepCow(x, y, self.settings))
-
 
     def end(self, show_weights=False):
         DeepCow.save_state(self.settings)
@@ -87,8 +84,7 @@ class World:
         rolled = np.roll(self.cells, (size_2 - creature.x, size_2 - creature.y), (0, 1))
         view_distance = self.settings.view_distance
         return rolled[
-            size_2 - view_distance : size_2 + view_distance + 1,
-            size_2 - view_distance : size_2 + view_distance + 1,
+            size_2 - view_distance : size_2 + view_distance + 1, size_2 - view_distance : size_2 + view_distance + 1
         ]
 
     def step(self):

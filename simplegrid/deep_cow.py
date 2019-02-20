@@ -62,24 +62,17 @@ class DeepCow(AbstractCow):
         self.prev_action_idx = self.action_idx
         self.state = self.to_internal_state(observation)
         if not DeepCow.agent:
-            DeepCow.agent = DQNAgent.from_dimensions(
-                len(self.state), layers=self.settings.layers, action_size=5
-            )
+            DeepCow.agent = DQNAgent.from_dimensions(len(self.state), layers=self.settings.layers, action_size=5)
         self.action_idx = DeepCow.agent.act(self.state)
         return Action(self.action_idx)
 
     def learn(self, reward, done):
         self.reward = reward
         if self.prev_state is not None and self.state is not None:
-            DeepCow.agent.remember(
-                self.prev_state, self.prev_action_idx, self.prev_reward, self.state
-            )
+            DeepCow.agent.remember(self.prev_state, self.prev_action_idx, self.prev_reward, self.state)
             DeepCow.agent.replay()
         if done:
-            DeepCow.agent.remember(
-                self.state, self.action_idx, self.reward, None
-            )
-
+            DeepCow.agent.remember(self.state, self.action_idx, self.reward, None)
 
     @classmethod
     def restore_state(cls, settings):

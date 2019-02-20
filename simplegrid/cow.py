@@ -8,6 +8,7 @@ from simplegrid.map_feature import MapFeature
 
 MAX_ENERGY = 1000
 
+
 class Action(IntEnum):
     GRAZE = 0
     UP = 1
@@ -25,12 +26,7 @@ class Action(IntEnum):
         return self.name
 
     def to_direction(self):
-        return {
-            Action.UP: (0, -1),
-            Action.RIGHT: (1, 0),
-            Action.DOWN: (0, 1),
-            Action.LEFT: (-1, 0),
-        }[self]
+        return {Action.UP: (0, -1), Action.RIGHT: (1, 0), Action.DOWN: (0, 1), Action.LEFT: (-1, 0)}[self]
 
     def to_observation(self, offset):
         direction = self.to_direction()
@@ -60,9 +56,7 @@ class AbstractCow(abc.ABC):
         pass
 
     def draw(self, display):
-        display.circle(
-            self.x, self.y, math.sqrt(min(0.64, 2 * self.energy / MAX_ENERGY)), self.__class__.COLOR
-        )
+        display.circle(self.x, self.y, math.sqrt(min(0.64, 2 * self.energy / MAX_ENERGY)), self.__class__.COLOR)
 
     def split(self):
         new_creature = self.__class__(self.x, self.y, self.settings, self.energy / 2)
@@ -95,9 +89,7 @@ class GreedyCow(AbstractCow):
 
         offset = observation.shape[0] // 2
         possible_actions = list(Action)[1:-1]
-        interesting_actions = [
-            a for a in possible_actions if observation[a.to_observation(offset)] == -1
-        ]
+        interesting_actions = [a for a in possible_actions if observation[a.to_observation(offset)] == -1]
 
         if interesting_actions:
             return random.choice(interesting_actions)
