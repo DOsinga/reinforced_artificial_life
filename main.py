@@ -11,7 +11,6 @@ from shared.display import Display
 from shared.experiment_settings import ExperimentSettings
 from simplegrid.deep_cow import DeepCow
 from simplegrid.world import World as World
-from shared.episode import Episode
 
 FRAME_RATE = 60
 TITLE = 'Reinforced Artificial Life'
@@ -25,11 +24,9 @@ def main(settings, show_weights):
     world = World(settings, display)
 
     for episode_count in itertools.count():
-        # Play an episode
-        episode = Episode()
         display.sidebar['episode'] = episode_count
 
-        world.reset(episode)
+        world.reset()
         while True:
             # --- Event Processing
             for event in pygame.event.get():

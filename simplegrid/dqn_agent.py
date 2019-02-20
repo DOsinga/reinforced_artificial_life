@@ -15,7 +15,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 class DQNAgent:
     def __init__(self, model, epsilon):
         """Create an agent using a model. Typically you want to call either from_stored_model or from_dimensions."""
-        self.memory = deque(maxlen=250000)
+        self.memory = deque(maxlen=250_000)
         self.gamma = 0.5  # discount rate
         self.epsilon = epsilon
         self.epsilon_min = 0.01
@@ -93,9 +93,7 @@ class DQNAgent:
         # Predict q_values in batches for efficiency
         none_state = np.zeros(self.input_size)  # Used in place of None for next_state
         states = np.array([sample[0] for sample in batch])
-        next_states = np.array(
-            [(none_state if sample[3] is None else sample[3]) for sample in batch]
-        )
+        next_states = np.array([(none_state if sample[3] is None else sample[3]) for sample in batch])
         q_values = self.model.predict(states)
         q_values_next = self.model.predict(next_states)
 
@@ -145,12 +143,7 @@ class DQNAgent:
                 state = [float(x) for x in state]
                 if next_state is not None:
                     next_state = [float(x) for x in next_state]
-                record = {
-                    'state': state,
-                    'action': int(action),
-                    'reward': float(reward),
-                    'next_state': next_state,
-                }
+                record = {'state': state, 'action': int(action), 'reward': float(reward), 'next_state': next_state}
                 fout.write(json.dumps(record) + '\n')
 
     def save_model(self, name):

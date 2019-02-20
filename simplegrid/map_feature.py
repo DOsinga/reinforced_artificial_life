@@ -6,7 +6,6 @@ class MapFeature(Enum):
     # CREATURE is a place holder:
     CREATURE = 1, '@', (240, 20, 20)
     EMPTY = 0, '.', (0, 0, 0)
-    GRASS = -1, '#', (20, 240, 20)
     ROCK = -2, '*', (128, 128, 128)
     WATER = -3, '~', (0, 0, 255)
 
@@ -29,9 +28,7 @@ class MapFeature(Enum):
     @classmethod
     def text_scene_to_environment(cls, text_scene):
         text_scene = text_scene.strip()
-        return np.asarray(
-            [[cls.from_char(char).index for char in line] for line in text_scene.split('\n')]
-        ).T
+        return np.asarray([[cls.from_char(char).index for char in line] for line in text_scene.split('\n')]).T
 
     def to_feature_vector(self, vector):
         """Convert the vector to a feature vector.

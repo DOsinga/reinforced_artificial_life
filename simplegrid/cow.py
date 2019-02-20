@@ -8,8 +8,9 @@ from simplegrid.map_feature import MapFeature
 
 MAX_ENERGY = 1000
 
+
 class Action(IntEnum):
-    NONE = 0
+    GRAZE = 0
     UP = 1
     RIGHT = 2
     DOWN = 3
@@ -25,12 +26,7 @@ class Action(IntEnum):
         return self.name
 
     def to_direction(self):
-        return {
-            Action.UP: (0, -1),
-            Action.RIGHT: (1, 0),
-            Action.DOWN: (0, 1),
-            Action.LEFT: (-1, 0),
-        }[self]
+        return {Action.UP: (0, -1), Action.RIGHT: (1, 0), Action.DOWN: (0, 1), Action.LEFT: (-1, 0)}[self]
 
     def to_observation(self, offset):
         direction = self.to_direction()
@@ -60,9 +56,7 @@ class AbstractCow(abc.ABC):
         pass
 
     def draw(self, display):
-        display.circle(
-            self.x, self.y, math.sqrt(min(0.64, 2 * self.energy / MAX_ENERGY)), self.__class__.COLOR
-        )
+        display.circle(self.x, self.y, math.sqrt(min(0.64, 2 * self.energy / MAX_ENERGY)), self.__class__.COLOR)
 
     def split(self):
         new_creature = self.__class__(self.x, self.y, self.settings, self.energy / 2)
@@ -95,9 +89,7 @@ class GreedyCow(AbstractCow):
 
         offset = observation.shape[0] // 2
         possible_actions = list(Action)[1:-1]
-        interesting_actions = [
-            a for a in possible_actions if observation[a.to_observation(offset)] == -1
-        ]
+        interesting_actions = [a for a in possible_actions if observation[a.to_observation(offset)] == -1]
 
         if interesting_actions:
             return random.choice(interesting_actions)
@@ -118,23 +110,24 @@ class SmartCow(SimpleCow):
 
         # Initial value of a is to favor one direction a little more than others
         # The random is to prevent creature from ending up in an oscillator
-        possible_actions = {a: (a + 2 * random.random()) / 100 for a in list(Action)[1:-1]}
+        possible_actions = {a: (a + 2 * random.random()) / 100 for a in list(Action)[:-1]}
 
         for col in range(size):
             x = col - view_distance
             for row in range(size):
+                reward = observation[col, row, 0]
                 y = row - view_distance
                 dist = abs(x) + abs(y)
-                if 0 < dist <= view_distance:
-                    value = observation[col, row]
-                    if value == MapFeature.GRASS.index:
-                        reward = 1
-                    elif dist == 1 and value == MapFeature.ROCK.index:
-                        reward = -1
+                if dist == 0:
+                    possible_actions[Action.GRAZE] += reward * 5
+                elif dist <= view_distance:
+                    value = observation[col, row, 1]
+                    if dist == 1 and value == MapFeature.ROCK.index:
+                        reward += -1
                     elif dist == 1 and value == MapFeature.WATER.index:
-                        reward = -self.energy / self.settings.grass_energy
+                        reward -= self.energy / self.settings.grass_energy
                     elif value == MapFeature.CREATURE.index:
-                        reward = -0.5
+                        reward -= 0.5
                     else:
                         continue
                     reward /= dist * dist
