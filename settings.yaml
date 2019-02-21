@@ -16,6 +16,7 @@ scale: 10
 
 view_distance: 3
 steps_per_episode: 1000
+display_off: 1
 
 layers: [16, 16]
 
