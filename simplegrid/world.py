@@ -2,6 +2,7 @@
 import os
 import random
 from collections import Counter, defaultdict, deque
+import time
 
 import numpy as np
 
@@ -13,12 +14,13 @@ from simplegrid.map_feature import MapFeature
 
 
 class World:
-    def __init__(self, settings, display):
+    def __init__(self, settings, display=None):
         self.counts = {}
-        display.offset_x = 0
-        display.offset_y = 0
-        if settings.path:
-            display.sidebar[os.path.basename(os.path.normpath(settings.path))] = ''
+        if display:
+            display.offset_x = 0
+            display.offset_y = 0
+            if settings.path:
+                display.sidebar[os.path.basename(os.path.normpath(settings.path))] = ''
 
         self.creatures = {}
         self.energies = {}
@@ -27,6 +29,7 @@ class World:
         self.cells = np.zeros((self.size, self.size))
         self.steps = 0
         self.winstreak = deque(maxlen=9)
+        self.grass_count = 0
         DeepCow.restore_state(settings)
 
     def reset(self, episode, grass_fraction=None, rock_fraction=None, water_fraction=None):
@@ -67,6 +70,7 @@ class World:
         for _ in range(self.settings.start_num_wolves):
             x, y = self.free_spot()
             self.add_new_creature(Wolf(x, y, self.settings))
+        self.start_time = time.time()
 
     def end(self, show_weights=False):
         self.episode.save(self.settings)
@@ -179,12 +183,15 @@ class World:
                 if idx < 0:
                     display.rectangle(x, y, 1, MapFeature(idx).color, padding=0.1)
                     if idx == MapFeature.GRASS.index:
-                        grass_count += 1
+                        self.grass_count += 1
                 elif idx > 0:
                     self.creatures[idx].draw(display)
+
+    def update_sidebar(self, display):
         display.sidebar['Winner streak'] = ''.join(self.winstreak)
         display.sidebar['steps'] = self.steps
-        display.sidebar['grass'] = str(round(100 * grass_count / self.size / self.size)) + '%'
+        display.sidebar['steps per second'] = round(self.steps / (time.time() - self.start_time), 1)
+        display.sidebar['grass'] = str(round(100 * self.grass_count / self.size / self.size)) + '%'
         for k, v in self.counts.items():
             display.sidebar[k + 's'] = v
             display.sidebar[k + ' energy'] = int(self.energies[k])

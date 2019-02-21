@@ -62,7 +62,7 @@ class SmartCow(SimpleCow):
                     elif dist == 1 and value == MapFeature.ROCK.index:
                         reward = -1
                     elif value == MapFeature.COW.index:
-                       reward = -0.5
+                        reward = -0.5
                     else:
                         continue
                     reward /= dist * dist
