@@ -21,7 +21,7 @@ class DQNAgent:
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
         self.learning_rate = 0.001
-        self.batch_size = 64
+        self.batch_size = 128
         model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
         self.model = model
         self.input_size = int(self.model.input.shape[-1])
@@ -87,6 +87,8 @@ class DQNAgent:
 
     def replay(self):
         # Sample a batch from memory uniformly at random
+        if self.batch_size > len(self.memory):
+            return
         batch_size = min(self.batch_size, len(self.memory))
         batch = random.sample(self.memory, batch_size)
 
