@@ -5,6 +5,6 @@ jupyter
 keras
 numpy
 pip-tools
-pygame
+pyyaml>=4.2b1
 tensorflow
 venvdotapp

@@ -13,16 +13,19 @@ from simplegrid.deep_cow import DeepCow
 from simplegrid.world import World as World
 from shared.episode import Episode
 
-FRAME_RATE = 60
+import time
+
 TITLE = 'Reinforced Artificial Life'
+SAMPLE_RATE_DISPLAY_NON_ACTIVE = 10
 
 
 def main(settings, show_weights):
-
     display = Display(TITLE, settings.world_size, settings.scale)
-    clock = pygame.time.Clock()
 
     world = World(settings, display)
+
+    last_frame = time.time()
+    fps = 0
 
     for episode_count in itertools.count():
         # Play an episode
@@ -30,38 +33,45 @@ def main(settings, show_weights):
         display.sidebar['episode'] = episode_count
 
         world.reset(episode)
-        while True:
+        for step_count in itertools.count():
             # --- Event Processing
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    return
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        display.reset_offsets()
+            if display.active or step_count % SAMPLE_RATE_DISPLAY_NON_ACTIVE == 0:
+                display.clear()
+                world.draw(display)
+                display.flip()
+                pygame.display.set_caption(f'{TITLE} {world.get_info()} fps:{fps:2.1f}')
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        return
+                    elif event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_RETURN:
+                            display.reset_offsets()
+                        elif event.key == pygame.K_SPACE:
+                            display.active = not display.active
 
-            keys_down = pygame.key.get_pressed()
-            if keys_down[pygame.K_LEFT]:
-                display.offset_x += 10
-            elif keys_down[pygame.K_RIGHT]:
-                display.offset_x -= 10
-            elif keys_down[pygame.K_UP]:
-                display.offset_y += 10
-            elif keys_down[pygame.K_DOWN]:
-                display.offset_y -= 10
-            elif keys_down[pygame.K_a]:
-                display.scale *= 1.05
-            elif keys_down[pygame.K_z]:
-                display.scale /= 1.05
-            elif keys_down[pygame.K_d]:
-                print(DeepCow.agent.identity_test())
+                keys_down = pygame.key.get_pressed()
+                if keys_down[pygame.K_LEFT]:
+                    display.offset_x += 10
+                elif keys_down[pygame.K_RIGHT]:
+                    display.offset_x -= 10
+                elif keys_down[pygame.K_UP]:
+                    display.offset_y += 10
+                elif keys_down[pygame.K_DOWN]:
+                    display.offset_y -= 10
+                elif keys_down[pygame.K_a]:
+                    display.scale *= 1.05
+                elif keys_down[pygame.K_z]:
+                    display.scale /= 1.05
+                elif keys_down[pygame.K_d]:
+                    print(DeepCow.agent.identity_test())
+            if not world.step():
+                break
+            cur_fps = 1 / (time.time() - last_frame)
+            last_frame = time.time()
+            if not fps:
+                fps = cur_fps
             else:
-                if not world.step():
-                    break
-            display.clear()
-            world.draw(display)
-            clock.tick(FRAME_RATE)
-            display.flip()
-            pygame.display.set_caption(TITLE + ' ' + world.get_info())
+                fps = 0.9 * fps + cur_fps * 0.1
         world.end(show_weights=show_weights)
 
 

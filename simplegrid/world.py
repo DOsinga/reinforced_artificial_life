@@ -71,7 +71,6 @@ class World:
     def end(self, show_weights=False):
         self.episode.save(self.settings)
         DeepCow.save_state(self.settings)
-        print('deep-cow-loss:', DeepCow.agent.replay())
         if show_weights:
             DeepCow.agent.show_weights()
 
@@ -172,6 +171,8 @@ class World:
         return False
 
     def draw(self, display):
+        if not display.active:
+            return
         grass_count = 0
         for x in range(self.size):
             for y in range(self.size):
